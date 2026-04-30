@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Costos Fabriles 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#ffffff;color:#1a1a1a;padding:24px}
+
+.header{padding:0 0 1rem}
+.header-top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.header h1{font-size:20px;font-weight:500}
+.updated{font-size:11px;color:#888;background:#f2f2f2;padding:3px 10px;border-radius:20px}
+.header-sub{font-size:12px;color:#888}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem}
+.kpi{background:#f5f5f5;border-radius:8px;padding:12px 14px}
+.kpi-label{font-size:11px;color:#888;margin-bottom:5px;line-height:1.3}
+.kpi-val{font-size:20px;font-weight:500;line-height:1}
+.kpi-sub{font-size:10px;color:#888;margin-top:4px}
+.kpi-val.neg{color:#A32D2D}
+.kpi-val.pos{color:#3B6D11}
+
+.nav{display:flex;gap:0;border-bottom:1px solid #e5e5e5;margin-bottom:1.25rem}
+.nav-btn{padding:8px 16px;font-size:12px;font-weight:500;border:none;background:transparent;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:Arial,sans-serif;transition:color .15s}
+.nav-btn.on{color:#1a1a1a;border-bottom-color:#1a1a1a}
+.panel{display:none}.panel.on{display:block}
+
+.tw{overflow-x:auto;border:0.5px solid #e5e5e5;border-radius:12px;margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;min-width:680px}
+
+thead tr{border-bottom:1px solid #e5e5e5}
+th{padding:9px 12px;font-size:10px;font-weight:500;color:#888;text-align:right;white-space:nowrap;background:#f9f9f9}
+th:first-child{text-align:left;border-radius:12px 0 0 0}
+th:last-child{border-radius:0 12px 0 0}
+th.hl{background:#E6F1FB;color:#0C447C}
+th.yr26{background:#EBF3FF;color:#185FA5;font-weight:700;border-top:3px solid #185FA5}
+td.yr26{background:#F5F9FF}
+td.yr26.neg{background:#F5F9FF;color:#A32D2D}
+td.yr26.pos{background:#F5F9FF;color:#3B6D11}
+tr.total-row td.yr26{background:#dceeff}
+tr.group-hdr td.yr26{background:#EBF3FF}
+
+tr.group-hdr td{background:#f5f5f5;border-top:1px solid #e5e5e5;padding:6px 12px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888}
+tr.group-hdr td:first-child{color:#1a1a1a;font-size:11px}
+
+td{padding:6px 12px;font-size:11px;text-align:right;border-bottom:0.5px solid #e5e5e5;color:#1a1a1a;white-space:nowrap}
+td:first-child{text-align:left}
+tr:last-child td{border-bottom:none}
+
+td.neg{color:#A32D2D}
+td.pos{color:#3B6D11}
+td.hl{background:#E6F1FB;color:#0C447C;font-weight:500}
+td.hl.neg{background:#FCEBEB;color:#A32D2D;font-weight:500}
+td.hl.pos{background:#EAF3DE;color:#3B6D11;font-weight:500}
+td.row-label{font-weight:400;color:#888;text-align:left;padding-left:20px}
+td.row-label.indent{padding-left:12px}
+td.std-val{color:#185FA5;font-weight:500}
+tr.total-row td{background:#f5f5f5;font-weight:500;border-top:1px solid #e5e5e5}
+tr.total-row td.row-label{color:#1a1a1a;padding-left:12px}
+
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+.pill.neg{background:#FCEBEB;color:#A32D2D}
+.pill.pos{background:#EAF3DE;color:#3B6D11}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Costos fabriles 2026</h1>
+    <span class="updated" id="chip-updated">Cargando...</span>
+  </div>
+  <div class="header-sub">Villa Adela · Inflados · Administración — Volumen · Gasto · $/tn</div>
+</div>
+
+<div class="kpis" id="kpis-container">
+  <div class="kpi"><div class="kpi-label">Gasto total acumulado</div><div class="kpi-val neg" id="kpi-gasto">—</div><div class="kpi-sub">Villa Adela + Inflados + Admin</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi1-lbl">$/tn —</div><div class="kpi-val neg" id="kpi1-val">—</div><div id="kpi1-sub" class="kpi-sub">—</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi2-lbl">$/tn —</div><div class="kpi-val neg" id="kpi2-val">—</div><div id="kpi2-sub" class="kpi-sub">—</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi3-lbl">$/tn —</div><div class="kpi-val neg" id="kpi3-val">—</div><div id="kpi3-sub" class="kpi-sub">—</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi4-lbl">$/tn —</div><div class="kpi-val neg" id="kpi4-val">—</div><div id="kpi4-sub" class="kpi-sub">—</div></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn on" onclick="sp('va',this)">Villa Adela</button>
+  <button class="nav-btn" onclick="sp('inf',this)">Inflados</button>
+  <button class="nav-btn" onclick="sp('adm',this)">Administración</button>
+  <button class="nav-btn" onclick="sp('cos',this)">$/tn por Sector</button>
+</div>
+
+<div id="pva" class="panel on"><div class="tw"><table id="tva"></table></div></div>
+<div id="pinf" class="panel"><div class="tw"><table id="tinf"></table></div></div>
+<div id="padm" class="panel"><div class="tw"><table id="tadm"></table></div></div>
+<div id="pcos" class="panel"><div class="tw"><table id="tcos"></table></div></div>
+
+<script>
+// M se setea desde la API
+let M = [];
+
+// ─── Datos de respaldo (hardcoded) ────────────────────────────────────────────
+const M_FB = ['Nov-25','Dic-25','Ene-26','Feb-26','Mar-26'];
+
+const VA_FB = [
+  { g:'Molienda', rows:[
+    { l:'Volumen (tn)', v:[5884.4,5117.9,6210.0,4801.9,6657.1], a:17668.986, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-175875530,-180427132,-144834344,-131426035,-146294260], a:-422554639, fmt:'gas' },
+    { l:'$/tn',        v:[-29889,-35254,-23323,-27370,-21976], a:-23915, fmt:'ptn' },
+  ]},
+  { g:'Elaborado', rows:[
+    { l:'Volumen (tn)', v:[2829.4,2727.3,2544.7,2291.0,3484.3], a:8320.035, fmt:'vol' },
+    { l:'Gasto ($)',    v:[83509080,-121305905,-96795337,-82041252,-95564592], a:-274401182, fmt:'gas' },
+    { l:'$/tn',        v:[29515,-44478,-38037,-35811,-27427], a:-32981, fmt:'ptn' },
+  ]},
+  { g:'Parboil', rows:[
+    { l:'Volumen (tn)', v:[1243.3,1698.2,1619.9,1749.8,2124.5], a:5494.23, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-72127305,-75433493,-66891127,-62735528,-66468071], a:-196094726, fmt:'gas' },
+    { l:'$/tn',        v:[-58011,-44418,-41293,-35854,-31286], a:-35691, fmt:'ptn' },
+  ]},
+  { g:'Harina', rows:[
+    { l:'Volumen (tn)', v:[90.6,131.8,158.1,117.6,138.1], a:413.746, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-9873085,-13582659,-12807364,-9483064,-11469147], a:-33759575, fmt:'gas' },
+    { l:'$/tn',        v:[-108946,-103068,-81013,-80672,-83047], a:-81595, fmt:'ptn' },
+  ]},
+  { g:'Depósito', rows:[
+    { l:'Volumen (tn)', v:[5884.4,5117.9,6210.0,4801.9,6657.1], a:17668.986, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-21651478,-38847149,-23744102,-21153794,-33010783], a:-77908679, fmt:'gas' },
+    { l:'$/tn',        v:[-3679,-7590,-3824,-4405,-4959], a:-4409, fmt:'ptn' },
+  ]},
+  { g:'Total Villa Adela', tot:true, rows:[
+    { l:'Volumen (tn)', v:[15932.0,14793.1,16742.7,13762.0,19061.2], a:null, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-196018318,-429596338,-345072274,-306839673,-352806853], a:null, fmt:'gas' },
+    { l:'$/tn',        v:[-62064,-131741,-106477,-103439,-85647], a:null, fmt:'ptn' },
+  ]},
+];
+
+const INF_FB = [
+  { g:'SLIM', rows:[
+    { l:'Volumen (tn)', v:[49.3,49.7,51.3,48.7,56.8], a:156.814, fmt:'vol' },
+    { l:'Gasto ($)',    v:[58893978,-89739631,-59638352,-58413661,-54683802], a:-172735815, fmt:'gas' },
+    { l:'$/tn',        v:[1194943,-1806462,-1162065,-1199410,-962896], a:-1101533, fmt:'ptn' },
+  ]},
+  { g:'Snacks', rows:[
+    { l:'Volumen (tn)', v:[77.3,64.1,64.0,69.7,76.7], a:210.365, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-47749796,-64552848,-60262355,-56098329,-60097246], a:-176457930, fmt:'gas' },
+    { l:'$/tn',        v:[-617393,-1007583,-941379,-805282,-783669], a:-838818, fmt:'ptn' },
+  ]},
+  { g:'Tostaditas', rows:[
+    { l:'Volumen (tn)', v:[32.0,29.8,16.7,13.7,27.3], a:57.722, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-40693315,-56851305,-42199149,-45649435,-52574836], a:-140423420, fmt:'gas' },
+    { l:'$/tn',        v:[-1271110,-1905524,-2527046,-3335240,-1923282], a:-2432754, fmt:'ptn' },
+  ]},
+  { g:'Tostadas', rows:[
+    { l:'Volumen (tn)', v:[null,null,35.9,16.1,4.2], a:56.117, fmt:'vol' },
+    { l:'Gasto ($)',    v:[null,null,-105076320,-38212200,-11638800], a:-154927320, fmt:'gas' },
+    { l:'$/tn',        v:[null,null,-2930018,-2378599,-2777757], a:-2760791, fmt:'ptn' },
+  ]},
+  { g:'Total Inflados', tot:true, rows:[
+    { l:'Volumen (tn)', v:[158.6,143.6,167.9,148.1,165.0], a:null, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-29549133,-211143784,-267176177,-198373624,-178994684], a:null, fmt:'gas' },
+    { l:'$/tn',        v:[-693560,-4719570,-7560509,-7718531,-6447603], a:null, fmt:'ptn' },
+  ]},
+];
+
+const ADM_FB = [
+  { g:'Administración', rows:[
+    { l:'Volumen (tn)', v:[5884.4,5117.9,6210.0,4801.9,6657.1], a:17668.986, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-112200411,-131654147,-95645083,-100449180,-96768784], a:-292863046, fmt:'gas' },
+    { l:'$/tn',        v:[-19068,-25724,-15402,-20919,-14536], a:-16575, fmt:'ptn' },
+  ]},
+];
+
+const COS_FB = [
+  { n:'Molienda',       ult:21976,  trim:24223,  anual:23915  },
+  { n:'Depósito',       ult:4959,   trim:4396,   anual:4409   },
+  { n:'Elaborado',      ult:27427,  trim:33758,  anual:32981  },
+  { n:'Parboil',        ult:31286,  trim:36144,  anual:35691  },
+  { n:'Harina',         ult:83047,  trim:81577,  anual:81595  },
+  { n:'SLIM',           ult:962896, trim:1108124,anual:1101533 },
+  { n:'Snacks',         ult:783669, trim:843443, anual:838818  },
+  { n:'Tostaditas',     ult:1923282,trim:2595190,anual:2432754 },
+  { n:'Administración', ult:14536,  trim:16952,  anual:16575  },
+];
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
+function fV(v){ if(v===null||v===undefined) return '<span style="color:#aaa">—</span>'; return v.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function fG(v){ if(v===null||v===undefined) return '<span style="color:#aaa">—</span>'; return (v/1e6).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})+'M'; }
+function fP(v){ if(v===null||v===undefined) return '<span style="color:#aaa">—</span>'; return '$'+Math.round(v).toLocaleString('es-AR'); }
+function fPct(v){ if(v===null) return '—'; const c=v<0?'pos':'neg'; return `<span class="pill ${c}">${v>0?'+':''}${(v*100).toFixed(1)}%</span>`; }
+function fmt(v,f){ return f==='vol'?fV(v):f==='gas'?fG(v):fP(v); }
+function nc(v,f){ if(v===null||v===undefined) return ''; return (f==='ptn'||f==='gas')?(v<0?'neg':'pos'):''; }
+function acumHl(v,f){ return 'hl'+((v!==null&&v!==undefined)?(v<0?' neg':' pos'):''); }
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function buildTable(tid, data){
+  const t = document.getElementById(tid);
+  let h = `<thead><tr><th>Sector</th><th>Indicador</th>`;
+  M.forEach(m=>{ h+=`<th class="${m.endsWith('-26')?'yr26':''}">${m}</th>`; });
+  h += `<th class="hl">Acumulado</th></tr></thead><tbody>`;
+  data.forEach(sec=>{
+    h += `<tr class="group-hdr"><td>${sec.g}</td><td colspan="${M.length+1}"></td></tr>`;
+    sec.rows.forEach(row=>{
+      h += `<tr class="${sec.tot?'total-row':''}">`;
+      h += `<td></td><td class="row-label${sec.tot?' indent':''}">${row.l}</td>`;
+      row.v.forEach((v,i)=>{
+        const y26 = M[i]&&M[i].endsWith('-26') ? ' yr26' : '';
+        h+=`<td class="${nc(v,row.fmt)}${y26}">${fmt(v,row.fmt)}</td>`;
+      });
+      h += `<td class="${acumHl(row.a,row.fmt)}">${row.a!==null?fmt(row.a,row.fmt):'—'}</td></tr>`;
+      if(row.fmt==='ptn' && !sec.tot){
+        h += `<tr class="${sec.tot?'total-row':''}">`;
+        h += `<td></td><td class="row-label${sec.tot?' indent':''}" style="color:#888;font-style:italic">USD/tn</td>`;
+        row.v.forEach((v,i)=>{
+          const y26 = M[i]&&M[i].endsWith('-26') ? ' yr26' : '';
+          const usd = v!=null ? Math.round(v/TC) : null;
+          h+=`<td class="${nc(v,'ptn')}${y26}" style="font-style:italic">${usd!=null?'USD'+Math.abs(usd).toLocaleString('es-AR'):'<span style="color:#aaa">—</span>'}</td>`;
+        });
+        const ua = row.a!=null ? Math.round(row.a/TC) : null;
+        h += `<td class="${acumHl(row.a,'ptn')}" style="font-style:italic">${ua!=null?'USD'+Math.abs(ua).toLocaleString('es-AR'):'—'}</td></tr>`;
+      }
+    });
+  });
+  t.innerHTML = h + '</tbody>';
+}
+
+const TC = 1450;
+function fUSD(v){ if(!v) return '—'; return 'USD'+Math.round(v/TC).toLocaleString('es-AR'); }
+
+function fVar(real, std){
+  if(!real||!std) return '—';
+  const pct = (real - std) / std * 100;
+  const cls = pct < 0 ? 'pos' : 'neg';
+  return `<span class="pill ${cls}">${pct>0?'+':''}${pct.toFixed(1)}%</span>`;
+}
+
+function buildCos(cosData){
+  const t = document.getElementById('tcos');
+  let h = `<thead><tr>
+    <th>Sector</th>
+    <th>$/tn últ. mes</th><th>USD/tn últ.</th>
+    <th>$/tn trimestre</th><th>USD/tn trim.</th>
+    <th class="hl">$/tn acumulado</th><th class="hl">USD/tn acum.</th>
+    <th>Costo std</th>
+    <th>Mes vs std</th><th>Trim vs std</th><th class="hl">Anual vs std</th>
+  </tr></thead><tbody>`;
+  cosData.forEach((c,i)=>{
+    const isComb = !!c.combined;
+    const fw = isComb ? 'font-weight:600;' : '';
+    const bg = isComb ? 'background:#f0f4fa;' : (i%2===0?'background:#f9f9f9;':'');
+    h += `<tr style="${bg}${fw}">`;
+    h += `<td class="row-label indent">${c.n}</td>`;
+    h += `<td class="neg">${c.ult?'$'+Math.round(c.ult).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td class="neg">${fUSD(c.ult)}</td>`;
+    h += `<td class="neg">${c.trim?'$'+Math.round(c.trim).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td class="neg">${fUSD(c.trim)}</td>`;
+    h += `<td class="hl neg">${c.anual?'$'+Math.round(c.anual).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td class="hl neg">${fUSD(c.anual)}</td>`;
+    h += `<td class="std-val">${c.std?'$'+Math.round(c.std).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td>${fVar(c.ult,c.std)}</td>`;
+    h += `<td>${fVar(c.trim,c.std)}</td>`;
+    h += `<td class="hl">${fVar(c.anual,c.std)}</td>`;
+    h += `</tr>`;
+  });
+  t.innerHTML = h + '</tbody>';
+}
+
+function sp(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+// ─── KPIs dinámicos ───────────────────────────────────────────────────────────
+function updateKPIs(data) {
+  // Gasto total
+  const gt = data.gastoTotal;
+  document.getElementById('kpi-gasto').textContent =
+    (gt < 0 ? '-' : '') + '$' + (Math.abs(gt)/1e6).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}) + 'M';
+
+  // Top 4 rubros del COS ordenados por impacto (mayor gasto anual absoluto)
+  const sorted = [...data.COS].sort((a,b) => (b.anual||0) - (a.anual||0));
+  const top4   = sorted.slice(0, 4);
+  const ult    = data.meses[data.meses.length - 1] || '';
+
+  top4.forEach((c, i) => {
+    const n = i + 1;
+    document.getElementById(`kpi${n}-lbl`).textContent = `$/tn ${c.n} — ${ult}`;
+    document.getElementById(`kpi${n}-val`).textContent = c.ult ? `-$${Math.round(c.ult).toLocaleString('es-AR')}` : '—';
+    document.getElementById(`kpi${n}-sub`).textContent = c.anual ? `acum $${Math.round(c.anual).toLocaleString('es-AR')}/tn` : '';
+  });
+}
+
+// ─── Carga de datos ───────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const data = await fetch('/api/fabriles').then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+
+    M = data.meses;
+    document.getElementById('chip-updated').textContent = 'Actualizado a ' + (data.actualizadoA || '');
+
+    buildTable('tva',  data.VA);
+    buildTable('tinf', data.INF);
+    buildTable('tadm', data.ADM);
+    buildCos(data.COS);
+    updateKPIs(data);
+
+    console.log('✅ Datos cargados desde SQL Server');
+  } catch (err) {
+    console.warn('⚠️ Sin conexión a SQL, usando datos locales:', err.message);
+
+    M = M_FB;
+    document.getElementById('chip-updated').textContent = 'Actualizado a Mar-26 (local)';
+
+    buildTable('tva',  VA_FB);
+    buildTable('tinf', INF_FB);
+    buildTable('tadm', ADM_FB);
+    buildCos(COS_FB);
+
+    // KPIs fallback
+    document.getElementById('kpi-gasto').textContent = '-$1.161M';
+    document.getElementById('kpi1-lbl').textContent = '$/tn Molienda — Mar-26';
+    document.getElementById('kpi1-val').textContent = '-$21.976';
+    document.getElementById('kpi1-sub').textContent = 'acum $23.915/tn';
+    document.getElementById('kpi2-lbl').textContent = '$/tn Parboil — Mar-26';
+    document.getElementById('kpi2-val').textContent = '-$31.286';
+    document.getElementById('kpi2-sub').textContent = 'acum $35.691/tn';
+    document.getElementById('kpi3-lbl').textContent = '$/tn SLIM — Mar-26';
+    document.getElementById('kpi3-val').textContent = '-$962.896';
+    document.getElementById('kpi3-sub').textContent = 'acum $1.101.533/tn';
+    document.getElementById('kpi4-lbl').textContent = '$/tn Tostaditas — Mar-26';
+    document.getElementById('kpi4-val').textContent = '-$1.923.282';
+    document.getElementById('kpi4-sub').textContent = 'acum $2.432.754/tn';
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>

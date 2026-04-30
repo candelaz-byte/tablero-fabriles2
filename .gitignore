@@ -1,0 +1,4 @@
+node_modules/
+SQL_PASS.txt
+.env
+functions/node_modules/

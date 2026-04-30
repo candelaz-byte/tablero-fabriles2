@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: tablero-fabriles
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: SQL_PASS
+        value: DHsql1234
+      - key: PORT
+        value: 3002
