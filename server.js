@@ -248,7 +248,9 @@ app.get('/api/fabriles', async (req, res) => {
 
     // ── COS: $/tn por sector ──────────────────────────────────────────────────
     const trimKeys  = mesesKeys.slice(-3);
-    const ultimoKey = mesesKeys[mesesKeys.length - 1];
+    const ultimoKey = [...mesesKeys].reverse().find(m =>
+      Object.values(gastoIdx).some(md => md[m])
+    ) || mesesKeys[mesesKeys.length - 1];
 
     const cosMap = {};
     for (const [dim, cfg] of Object.entries(RUBRO_CFG)) {
