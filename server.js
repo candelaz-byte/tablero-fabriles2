@@ -261,7 +261,11 @@ app.get('/api/fabriles', async (req, res) => {
         keys.forEach(m => { v += getVol(cfg.vol, m) || 0; g += md[m] || 0; });
         return v > 0 ? Math.round(g / v) : null;
       };
-      const ult = ptn([ultimoKey]), trim = ptn(trimKeys), anual = ptn(acumKeys);
+      const ultKey = [...mesesKeys].reverse().find(m => {
+        const v = getVol(cfg.vol, m), g = md[m];
+        return v && g != null && v > 0;
+      }) || ultimoKey;
+      const ult = ptn([ultKey]), trim = ptn(trimKeys), anual = ptn(acumKeys);
       cosMap[dim] = {
         n:     cfg.label,
         ult:   ult   != null ? Math.abs(ult)   : null,
@@ -281,7 +285,8 @@ app.get('/api/fabriles', async (req, res) => {
         });
         return v > 0 ? Math.round(g / v) : null;
       };
-      const ult = ptnComb([ultimoKey]), trim = ptnComb(trimKeys), anual = ptnComb(acumKeys);
+      const ultKeyComb = [...mesesKeys].reverse().find(m => getVol('MOLINO_CASC', m) && dims.some(d => gastoIdx[d]?.[m])) || ultimoKey;
+      const ult = ptnComb([ultKeyComb]), trim = ptnComb(trimKeys), anual = ptnComb(acumKeys);
       cosMap['__MOLINO_DEP__'] = {
         n:       'Molienda+Depósito',
         combined: true,
