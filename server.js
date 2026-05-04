@@ -316,7 +316,7 @@ app.get('/api/fabriles', async (req, res) => {
       ADM: buildTab('ADM'),
       COS,
       gastoTotal,
-      actualizadoA: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      actualizadoA: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); })(),
     });
 
   } catch (err) {
