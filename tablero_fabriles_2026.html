@@ -239,13 +239,14 @@ function buildCos(cosData, ultLabel, trimLabel, anualLabel){
   trimLabel  = trimLabel  || 'trimestre';
   anualLabel = anualLabel || 'acumulado';
   const t = document.getElementById('tcos');
+  const sub = s => `<br><span style="font-weight:400;font-size:0.78em;color:#888;white-space:nowrap">${s}</span>`;
   let h = `<thead><tr>
     <th>Sector</th>
-    <th>$/tn ${ultLabel}</th><th>USD/tn ${ultLabel}</th>
-    <th>$/tn ${trimLabel}</th><th>USD/tn ${trimLabel}</th>
-    <th class="hl">$/tn ${anualLabel}</th><th class="hl">USD/tn ${anualLabel}</th>
+    <th>$/tn${sub(ultLabel)}</th><th>USD/tn${sub(ultLabel)}</th>
+    <th>$/tn${sub(trimLabel)}</th><th>USD/tn${sub(trimLabel)}</th>
+    <th class="hl">$/tn${sub(anualLabel)}</th><th class="hl">USD/tn${sub(anualLabel)}</th>
     <th>Costo std</th>
-    <th>${ultLabel} vs std</th><th>${trimLabel} vs std</th><th class="hl">${anualLabel} vs std</th>
+    <th>vs std${sub(ultLabel)}</th><th>vs std${sub(trimLabel)}</th><th class="hl">vs std${sub(anualLabel)}</th>
   </tr></thead><tbody>`;
   cosData.forEach((c,i)=>{
     const isComb = !!c.combined;
