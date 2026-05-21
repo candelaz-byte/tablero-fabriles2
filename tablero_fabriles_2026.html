@@ -234,15 +234,18 @@ function fVar(real, std){
   return `<span class="pill ${cls}">${pct>0?'+':''}${pct.toFixed(1)}%</span>`;
 }
 
-function buildCos(cosData){
+function buildCos(cosData, ultLabel, trimLabel, anualLabel){
+  ultLabel   = ultLabel   || 'últ. mes';
+  trimLabel  = trimLabel  || 'trimestre';
+  anualLabel = anualLabel || 'acumulado';
   const t = document.getElementById('tcos');
   let h = `<thead><tr>
     <th>Sector</th>
-    <th>$/tn últ. mes</th><th>USD/tn últ.</th>
-    <th>$/tn trimestre</th><th>USD/tn trim.</th>
-    <th class="hl">$/tn acumulado</th><th class="hl">USD/tn acum.</th>
+    <th>$/tn ${ultLabel}</th><th>USD/tn ${ultLabel}</th>
+    <th>$/tn ${trimLabel}</th><th>USD/tn ${trimLabel}</th>
+    <th class="hl">$/tn ${anualLabel}</th><th class="hl">USD/tn ${anualLabel}</th>
     <th>Costo std</th>
-    <th>Mes vs std</th><th>Trim vs std</th><th class="hl">Anual vs std</th>
+    <th>${ultLabel} vs std</th><th>${trimLabel} vs std</th><th class="hl">${anualLabel} vs std</th>
   </tr></thead><tbody>`;
   cosData.forEach((c,i)=>{
     const isComb = !!c.combined;
@@ -282,7 +285,7 @@ function updateKPIs(data) {
   // Top 4 rubros del COS ordenados por impacto (mayor gasto anual absoluto)
   const sorted = [...data.COS].sort((a,b) => (b.anual||0) - (a.anual||0));
   const top4   = sorted.slice(0, 4);
-  const ult    = data.meses[data.meses.length - 1] || '';
+  const ult    = data.cosUltLabel || data.meses[data.meses.length - 1] || '';
 
   top4.forEach((c, i) => {
     const n = i + 1;
@@ -306,7 +309,7 @@ async function loadData() {
     buildTable('tva',  data.VA);
     buildTable('tinf', data.INF);
     buildTable('tadm', data.ADM);
-    buildCos(data.COS);
+    buildCos(data.COS, data.cosUltLabel, data.cosTrimLabel, data.cosAnualLabel);
     updateKPIs(data);
 
     console.log('✅ Datos cargados desde SQL Server');

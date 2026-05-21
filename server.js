@@ -89,15 +89,16 @@ app.get('/api/schema-op', async (req, res) => {
   try {
     const p = await getPool();
     const r = await p.request().query(`
-      SELECT Mesfecha, SUM(Cantidadconsumo)/1000.0 AS tn
-      FROM DHGranosGE
-      WHERE Mesfecha IN ('2025/11','2025/12','2026/1','2026/2','2026/3','2026/4')
-        AND Transaccionsubtiponombre NOT LIKE '%PARBOIL%'
-        AND Producto LIKE '%CASCARA%'
-      GROUP BY Mesfecha
-      ORDER BY Mesfecha
+      SELECT Cuenta,
+        SUM(CASE WHEN Anomes='2026-03' THEN Importemonprincipalreal ELSE 0 END) AS mar,
+        SUM(CASE WHEN Anomes='2026-04' THEN Importemonprincipalreal ELSE 0 END) AS abr
+      FROM DHControlPresup
+      WHERE Anomes IN ('2026-03','2026-04')
+        AND RTRIM(Dimensionvalor) = 'MOLINO'
+      GROUP BY Cuenta
+      ORDER BY abr
     `);
-    res.json({ sample: r.recordset });
+    res.json({ sample: r.recordset, total: r.recordset.reduce((s,x) => s + x.gasto, 0) });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -246,11 +247,22 @@ app.get('/api/fabriles', async (req, res) => {
       return groups;
     }
 
-    // ── COS: $/tn por sector ──────────────────────────────────────────────────
-    const trimKeys  = mesesKeys.slice(-3);
-    const ultimoKey = [...mesesKeys].reverse().find(m =>
-      Object.values(gastoIdx).some(md => md[m])
-    ) || mesesKeys[mesesKeys.length - 1];
+    // ── COS: $/tn por sector (solo meses cerrados) ───────────────────────────
+    const nowD = new Date();
+    const currentMonthKey = `${nowD.getFullYear()}-${String(nowD.getMonth()+1).padStart(2,'0')}`;
+    const closedKeys     = mesesKeys.filter(m => m < currentMonthKey);
+    const trimClosedKeys = closedKeys.slice(-3);
+    const acumClosedKeys = closedKeys.filter(m => m.startsWith(anio));
+    const ultimoClosedKey = closedKeys[closedKeys.length - 1] || mesesKeys[mesesKeys.length - 1];
+
+    // Etiquetas de período para los encabezados
+    const cosUltLabel   = mesLabel(ultimoClosedKey);
+    const cosTrimLabel  = trimClosedKeys.length > 1
+      ? `${mesLabel(trimClosedKeys[0])} a ${mesLabel(trimClosedKeys[trimClosedKeys.length-1])}`
+      : mesLabel(trimClosedKeys[0] || ultimoClosedKey);
+    const cosAnualLabel = acumClosedKeys.length > 1
+      ? `${mesLabel(acumClosedKeys[0])} a ${mesLabel(acumClosedKeys[acumClosedKeys.length-1])}`
+      : mesLabel(acumClosedKeys[0] || ultimoClosedKey);
 
     const cosMap = {};
     for (const [dim, cfg] of Object.entries(RUBRO_CFG)) {
@@ -261,11 +273,11 @@ app.get('/api/fabriles', async (req, res) => {
         keys.forEach(m => { v += getVol(cfg.vol, m) || 0; g += md[m] || 0; });
         return v > 0 ? Math.round(g / v) : null;
       };
-      const ultKey = [...mesesKeys].reverse().find(m => {
+      const ultKey = [...closedKeys].reverse().find(m => {
         const v = getVol(cfg.vol, m), g = md[m];
         return v && g != null && v > 0;
-      }) || ultimoKey;
-      const ult = ptn([ultKey]), trim = ptn(trimKeys), anual = ptn(acumKeys);
+      }) || ultimoClosedKey;
+      const ult = ptn([ultKey]), trim = ptn(trimClosedKeys), anual = ptn(acumClosedKeys);
       cosMap[dim] = {
         n:     cfg.label,
         ult:   ult   != null ? Math.abs(ult)   : null,
@@ -285,8 +297,8 @@ app.get('/api/fabriles', async (req, res) => {
         });
         return v > 0 ? Math.round(g / v) : null;
       };
-      const ultKeyComb = [...mesesKeys].reverse().find(m => getVol('MOLINO_CASC', m) && dims.some(d => gastoIdx[d]?.[m])) || ultimoKey;
-      const ult = ptnComb([ultKeyComb]), trim = ptnComb(trimKeys), anual = ptnComb(acumKeys);
+      const ultKeyComb = [...closedKeys].reverse().find(m => getVol('MOLINO_CASC', m) && dims.some(d => gastoIdx[d]?.[m])) || ultimoClosedKey;
+      const ult = ptnComb([ultKeyComb]), trim = ptnComb(trimClosedKeys), anual = ptnComb(acumClosedKeys);
       cosMap['__MOLINO_DEP__'] = {
         n:       'Molienda+Depósito',
         combined: true,
@@ -315,6 +327,9 @@ app.get('/api/fabriles', async (req, res) => {
       INF: buildTab('INF'),
       ADM: buildTab('ADM'),
       COS,
+      cosUltLabel,
+      cosTrimLabel,
+      cosAnualLabel,
       gastoTotal,
       actualizadoA: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); })(),
     });
