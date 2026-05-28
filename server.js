@@ -75,8 +75,55 @@ function monthsFrom(startYM) {
 }
 function inList(arr) { return arr.map(m => `'${m}'`).join(','); }
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+const crypto = require('crypto');
+const AUTH_TOKEN = crypto.createHash('sha256').update(DASHBOARD_PASS + 'dh-salt').digest('hex');
+function parseCookies(req) {
+  const out = {};
+  (req.headers.cookie || '').split(';').forEach(c => {
+    const [k, ...v] = c.trim().split('=');
+    if (k) out[k.trim()] = decodeURIComponent(v.join('='));
+  });
+  return out;
+}
+function isAuth(req) { return parseCookies(req).dh_auth === AUTH_TOKEN; }
+
+const LOGIN_HTML = (err) => `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dos Hermanos — Acceso</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#eaecf0;display:flex;align-items:center;justify-content:center;min-height:100vh}.box{background:white;border-radius:8px;padding:40px;width:340px;box-shadow:0 2px 12px rgba(0,0,0,.08)}h1{font-size:20px;font-weight:600;margin-bottom:24px;color:#0d0d0d}label{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#666;font-weight:500}input{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:14px;margin:6px 0 16px;font-family:inherit}button{width:100%;padding:12px;background:#d8252b;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}.err{color:#d8252b;font-size:13px;margin-top:8px}</style>
+</head><body><div class="box">
+<h1>Tablero Dos Hermanos</h1>
+<form method="POST" action="/login">
+<label>Contraseña</label>
+<input type="password" name="password" autofocus autocomplete="current-password">
+<button type="submit">Ingresar</button>
+${err ? '<p class="err">Contraseña incorrecta</p>' : ''}
+</form></div></body></html>`;
+
 // ─── Express ──────────────────────────────────────────────────────────────────
 const app = express();
+app.use(express.urlencoded({ extended: false }));
+app.get('/login', (req, res) => {
+  if (isAuth(req)) return res.redirect('/costo-tn');
+  res.send(LOGIN_HTML(false));
+});
+app.post('/login', (req, res) => {
+  if (req.body.password === DASHBOARD_PASS) {
+    res.setHeader('Set-Cookie', `dh_auth=${AUTH_TOKEN}; Path=/; HttpOnly; SameSite=Strict`);
+    return res.redirect('/costo-tn');
+  }
+  res.status(401).send(LOGIN_HTML(true));
+});
+app.get('/costo-tn', (req, res) => {
+  if (!isAuth(req)) return res.redirect('/login');
+  res.sendFile(path.join(__dirname, 'tablero_dh_v2.html'));
+});
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  if (!isAuth(req)) return res.redirect('/login');
+  next();
+});
 app.use(express.static(__dirname));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'tablero_fabriles_2026.html')));
 
