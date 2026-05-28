@@ -1,0 +1,1679 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>DH · Costo x Tn — v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Caveat+Brush&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-weight: 400;
+  background: #eaecf0;
+  color: #1a1a1a;
+  line-height: 1.5;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ====== LOGO ====== */
+.logo-svg { display: block; }
+.logo-text-dos { font-family: 'Caveat Brush', cursive; font-size: 78px; fill: white; }
+.logo-text-her { font-family: 'Caveat Brush', cursive; font-size: 120px; fill: white; }
+
+/* Header bar with logo */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dde0e5;
+}
+.header-title h1 {
+  font-size: 26px;
+  font-weight: 500;
+  color: #0d0d0d;
+  letter-spacing: -0.02em;
+}
+.header-title p {
+  color: #666;
+  font-size: 14px;
+  margin-top: 4px;
+}
+.logo-corner { width: 180px; flex-shrink: 0; }
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid #dde0e5;
+}
+.card h2 {
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  color: #0d0d0d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h2::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: #d8252b;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.card-sub { color: #888; font-size: 13px; margin-bottom: 14px; }
+
+/* Controls */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.control { display: flex; flex-direction: column; gap: 6px; }
+.control label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+  font-weight: 500;
+}
+.control input, .control select {
+  padding: 10px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  transition: border-color 0.15s;
+}
+.control input:focus, .control select:focus {
+  outline: none;
+  border-color: #d8252b;
+}
+.control-help { font-size: 11px; color: #999; }
+
+/* KPI Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi {
+  background: white;
+  border: 1px solid #dde0e5;
+  border-left: 4px solid #0d0d0d;
+  padding: 18px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi.red { border-left-color: #d8252b; }
+.kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 6px; }
+.kpi-value { font-size: 23px; font-weight: 600; letter-spacing: -0.02em; color: #0d0d0d; }
+.kpi.red .kpi-value { color: #d8252b; }
+.kpi-sub { font-size: 12px; color: #888; margin-top: 4px; }
+
+/* Sector cards grid */
+.sectors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.sector-card {
+  background: white;
+  border: 1px solid #dde0e5;
+  border-top: 3px solid #dde0e5;
+  border-radius: 6px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+.sector-card:hover { border-color: #c5c9d0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.sector-name { font-size: 12px; font-weight: 400; color: #555; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 10px; }
+.sector-cost { font-size: 21px; font-weight: 600; color: #d8252b; letter-spacing: -0.01em; }
+.sector-cost-label { font-size: 11px; color: #888; margin-top: 2px; }
+.sector-meta { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0; font-size: 12px; }
+.sector-meta div { display: flex; flex-direction: column; }
+.sector-meta span:first-child { color: #999; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+.sector-meta span:last-child { color: #333; font-weight: 500; margin-top: 2px; }
+.trend-up { color: #d8252b; }
+.trend-down { color: #2a9d3a; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+th, td {
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 1px solid #f0f0f0;
+  white-space: nowrap;
+}
+th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: white; z-index: 1; }
+th:nth-child(2) { position: sticky; left: 140px; background: #fafafa; z-index: 1; }
+th {
+  background: #fafafa;
+  font-weight: 500;
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid #e0e0e0;
+}
+tr:hover td { background: #fafbfc; }
+td.proj { background: #fff8e1; color: #b87a00; font-style: italic; }
+td.proj:hover { background: #ffefb8; }
+
+/* Chart container */
+.chart-container { position: relative; height: 380px; margin-top: 12px; }
+.chart-large { height: 440px; }
+
+/* Sector filter chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.chip {
+  padding: 6px 12px;
+  background: #f0f0f0;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+  user-select: none;
+}
+.chip:hover { background: #e0e0e0; }
+.chip.active { background: #0d0d0d; color: white; border-color: #0d0d0d; }
+.chip.active.red { background: #d8252b; border-color: #d8252b; }
+
+/* Footer */
+.footer { text-align: center; color: #999; font-size: 12px; padding: 24px 0 8px; }
+
+/* Tabla combinada sector — formato Fabriles */
+tr.group-hdr td { background:#f5f5f5; border-top:1.5px solid #e0e0e0; padding:5px 10px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:#666; }
+tr.group-hdr td:first-child { font-size:11px; font-weight:700; position:sticky; left:0; background:#f5f5f5; z-index:2; min-width:140px; }
+th.row-lbl, td.row-lbl { text-align:left !important; font-weight:400; color:#888; font-size:11px; position:sticky; left:140px; background:white; z-index:1; box-shadow:2px 0 4px rgba(0,0,0,.05); min-width:100px; padding-left:14px !important; }
+th.row-lbl { background:#fafafa; z-index:3; }
+tr.group-hdr td.grp-span { position:static; }
+td.neg { color:#A32D2D; }
+td.pos { color:#2a9d3a; }
+th.yr26 { background:#EBF3FF; color:#185FA5; font-weight:700; border-top:3px solid #185FA5; }
+td.yr26 { background:#F5F9FF; }
+td.yr26.neg { background:#F5F9FF; color:#A32D2D; }
+td.yr26.pos { background:#F5F9FF; color:#2a9d3a; }
+td.proj.yr26 { background:#fffbe8; }
+
+/* Tabs (usados en página de detalle) */
+.tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid #e0e0e0; }
+.tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #777;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.tab:hover { color: #333; }
+.tab.active { color: #d8252b; border-bottom-color: #d8252b; }
+
+.btn {
+  padding: 8px 16px;
+  border: 1.5px solid #0d0d0d;
+  background: #0d0d0d;
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.btn:hover { background: #2a2a2a; }
+.btn.outline { background: white; color: #0d0d0d; }
+.btn.outline:hover { background: #f5f5f5; }
+
+@media (max-width: 768px) {
+  body { padding: 12px; }
+  .header { flex-direction: column-reverse; align-items: flex-start; gap: 16px; }
+  .logo-corner { width: 140px; align-self: flex-end; }
+  .header-title h1 { font-size: 22px; }
+}
+
+/* ====== Page navigation ====== */
+.page-nav {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #dde0e5;
+  width: auto;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+.page-nav-btn {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  border-radius: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.page-nav-btn:hover { color: #333; }
+.page-nav-btn.active {
+  background: transparent;
+  color: #d8252b;
+  border-bottom-color: #d8252b;
+  box-shadow: none;
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== Detail view ===== */
+.detail-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.heatmap-wrap { overflow-x: auto; }
+table.heatmap { font-size: 11px; min-width: 100%; }
+table.heatmap td.cell { padding: 4px 8px; text-align: right; }
+table.heatmap td.zero { color: #bbb; }
+.summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) { .summary-grid { grid-template-columns: 1fr; } }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+}
+.bar-row .lbl { flex: 0 0 38%; color: #333; }
+.bar-row .bar-track {
+  flex: 1;
+  height: 14px;
+  background: #f0f0f0;
+  border-radius: 7px;
+  position: relative;
+  overflow: hidden;
+}
+.bar-row .bar-fill {
+  position: absolute; top: 0; left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #d8252b, #b01e23);
+  border-radius: 7px;
+}
+.bar-row .val { flex: 0 0 90px; text-align: right; font-weight: 600; color: #0d0d0d; }
+.bar-row .pct { flex: 0 0 55px; text-align: right; font-size: 11px; color: #888; }
+/* Update chip */
+.update-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:500; margin-top:8px; }
+.update-chip.online  { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+.update-chip.offline { background:#fffbeb; color:#d97706; border:1px solid #fde68a; }
+.update-chip.loading { background:#f5f5f5; color:#888;    border:1px solid #e0e0e0; }
+.std-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; margin-top:6px; }
+.std-badge.above { background:#fef2f2; color:#c0392b; border:1px solid #fecaca; }
+.std-badge.below { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER con logo en margen superior derecho (org instruction) -->
+<div class="header">
+  <div class="header-title">
+    <h1>Costo por Tonelada Elaborada <span style="font-size:13px;font-weight:500;background:#222;color:#fff;padding:2px 8px;border-radius:4px;vertical-align:middle;letter-spacing:.04em">v2</span></h1>
+    <p>Proyección por sector productivo — Dos Hermanos</p>
+  <span class="update-chip loading" id="updateChip">· Cargando datos...</span>
+  </div>
+  <div class="logo-corner">
+    <!-- LOGO SVG (reconstrucción del logo Dos Hermanos) -->
+    <svg class="logo-svg" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+      <!-- Curva negra inferior (forma de "ala") -->
+      <path d="M 30,180
+               C 200,90 600,90 770,180
+               C 778,210 778,260 770,300
+               C 760,360 700,395 600,395
+               C 400,375 200,395 100,395
+               C 50,375 22,330 30,180 Z"
+            fill="#0d0d0d"/>
+      <!-- Banda roja superior -->
+      <path d="M 200,60
+               C 320,30 480,30 600,60
+               C 615,90 618,150 605,185
+               C 480,160 320,160 195,185
+               C 182,150 185,90 200,60 Z"
+            fill="#d8252b"/>
+      <!-- Borde claro sutil en rojo -->
+      <path d="M 200,60
+               C 320,30 480,30 600,60
+               C 615,90 618,150 605,185
+               C 480,160 320,160 195,185
+               C 182,150 185,90 200,60 Z"
+            fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+      <!-- Dos -->
+      <text x="400" y="155" class="logo-text-dos" text-anchor="middle">Dos</text>
+      <!-- Hermanos -->
+      <text x="400" y="320" class="logo-text-her" text-anchor="middle">Hermanos</text>
+    </svg>
+  </div>
+</div>
+
+<!-- PAGE NAVIGATION -->
+<div class="page-nav">
+  <button class="page-nav-btn active" data-page="proj">Proyección</button>
+  <button class="page-nav-btn" data-page="detail">Análisis detallado</button>
+</div>
+
+<!-- ============ PÁGINA: PROYECCIÓN ============ -->
+<div class="page active" id="pageProj">
+
+<!-- CONTROLES -->
+<div class="card">
+  <h2>Supuestos de proyección</h2>
+  <p class="card-sub">Ajustá las variables y el dashboard se recalcula al instante. Tus cambios se guardan en el navegador.</p>
+  <div class="controls">
+
+    <div class="control">
+      <label>Inflación mensual gastos</label>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="number" id="infGastos" value="3.9" step="0.1" min="0" max="50" style="flex:1">
+        <button type="button" id="infGastosReset" title="Restaurar tasa calculada" style="padding:4px 8px;font-size:.75rem;border:1px solid #ccc;border-radius:4px;background:#f5f5f5;cursor:pointer;white-space:nowrap">↺ auto</button>
+      </div>
+      <div class="control-help" id="infGastosHelp">% mensual · calculando…</div>
+    </div>
+    <div class="control">
+      <label>Tipo de proyección</label>
+      <select id="useSeasonality">
+        <option value="1" selected>Con patrones históricos (aguinaldos, vacaciones, invierno…)</option>
+        <option value="0">Plana (tasa mensual uniforme)</option>
+      </select>
+      <div class="control-help">Los patrones se calculan del historial 2023-2025 por sector</div>
+    </div>
+    <div class="control">
+      <label>Inflación mensual volumen</label>
+      <input type="number" id="infVol" value="0.0" step="0.1" min="-20" max="20">
+      <div class="control-help">% mensual de variación de producción (puede ser negativo)</div>
+    </div>
+    <div class="control">
+      <label>Proyección</label>
+      <select id="projMonths">
+        <option value="0" selected>Cargando...</option>
+      </select>
+      <div class="control-help">Se configura al cargar los datos</div>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid" id="kpis"></div>
+
+<!-- Costo actual por sector -->
+<div class="card">
+  <h2>Costo por tonelada por sector — último mes real</h2>
+  <p class="card-sub">Calculado con los datos más recientes disponibles. La tendencia compara últimos 3 vs 3 meses anteriores.</p>
+  <div class="sectors-grid" id="sectorCards"></div>
+</div>
+
+<!-- Chart 1: evolución $/tn -->
+<div class="card">
+  <h2>Evolución del costo por tonelada</h2>
+  <p class="card-sub">Histórico + proyección. Hacé click en los sectores para mostrar/ocultar.</p>
+  <div class="chips" id="chartChips"></div>
+  <div class="chart-container chart-large">
+    <canvas id="chartCostTn"></canvas>
+  </div>
+</div>
+
+<!-- Chart 2: gasto total -->
+<div class="card">
+  <h2>Evolución del gasto total mensual de planta</h2>
+  <p class="card-sub">Suma de todos los sectores. Las barras anaranjadas son la proyección.</p>
+  <div class="chart-container">
+    <canvas id="chartGasto"></canvas>
+  </div>
+</div>
+
+<!-- Tabla detalle -->
+<div class="card">
+  <h2>Detalle mensual por sector</h2>
+  <div class="tabs" id="tableTabs">
+    <div class="tab active" data-tab="costo" onclick="switchTableTab('costo')">Costo por sector</div>
+    <div class="tab" data-tab="std" onclick="switchTableTab('std')">vs Estándar</div>
+  </div>
+  <div id="tabCosto">
+    <div class="table-wrap">
+      <table id="detailTable"></table>
+    </div>
+  </div>
+  <div id="tabStd" style="display:none">
+    <div class="table-wrap">
+      <table id="stdTable"></table>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex; gap:8px; margin: 16px 0; justify-content:flex-end;">
+  <button class="btn outline" onclick="exportCSV()">⬇ Exportar tabla a CSV</button>
+  <button class="btn outline" onclick="resetData()">Restablecer valores</button>
+</div>
+
+</div><!-- /pageProj -->
+
+<!-- ============ PÁGINA: ANÁLISIS DETALLADO ============ -->
+<div class="page" id="pageDetail">
+
+  <div class="card">
+    <h2>Análisis por centro de costo y cuenta</h2>
+    <p class="card-sub">Desglose del gasto real (ene-2023 a abr-2026) por sector productivo y rubro contable.</p>
+
+    <div class="detail-filters">
+      <div class="control" style="flex:1 1 100%">
+        <label>Centro de costo (sector) — seleccioná uno o varios</label>
+        <div id="detSectorChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+      </div>
+      <div class="control">
+        <label>Desde</label>
+        <input type="date" id="detDesde">
+      </div>
+      <div class="control">
+        <label>Hasta</label>
+        <input type="date" id="detHasta">
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs del sector -->
+  <div class="kpi-grid" id="detKpis"></div>
+
+  <!-- Top rubros: ranking visual -->
+  <div class="card">
+    <h2>Top 20 rubros</h2>
+    <p class="card-sub">Ranking de cuentas que más gastan en los sectores y período seleccionados.</p>
+    <div id="detTopRubros"></div>
+  </div>
+
+  <!-- Evolución mensual del sector -->
+  <div class="card">
+    <h2>Evolución mensual del sector</h2>
+    <p class="card-sub">Top 5 rubros del sector apilados + total mensual.</p>
+    <div class="chart-container chart-large"><canvas id="chartRubrosTime"></canvas></div>
+  </div>
+
+  <!-- Tabla heatmap rubros × meses -->
+  <div class="card">
+    <h2>Detalle rubro × mes</h2>
+    <p class="card-sub">Tabla completa con todos los rubros del sector y todos los meses.</p>
+    <div class="heatmap-wrap">
+      <table class="heatmap" id="detHeatmap"></table>
+    </div>
+    <div style="display:flex; gap:8px; margin-top: 12px; justify-content:flex-end;">
+      <button class="btn outline" onclick="exportDetailCSV()">⬇ Exportar a CSV</button>
+    </div>
+  </div>
+
+  <!-- Comparativo entre sectores -->
+  <div class="card">
+    <h2>Comparativo entre sectores — mismo rubro</h2>
+    <p class="card-sub">Elegí un rubro para ver cómo se reparte entre los 8 centros de costo.</p>
+    <div class="control" style="max-width: 400px; margin-bottom: 14px;">
+      <label>Rubro</label>
+      <select id="detRubroCompare"></select>
+    </div>
+    <div class="chart-container" style="height:340px"><canvas id="chartRubroBySector"></canvas></div>
+  </div>
+
+</div><!-- /pageDetail -->
+
+<div class="footer">
+  Datos: cubo de gastos (ene-2023 a abr-2026) + Fabriles 2023/2024/2025 (volúmenes elaborados).<br>
+  Generado el 23 de mayo de 2026 · v2 (auto-update) · Dos Hermanos
+</div>
+
+<script>
+// ============== DATOS HISTÓRICOS (Ene-23 a Sep-25) — hardcoded, pre-SQL ==============
+let RAW = { months: [], nRealGasto: 0, data: {}, detail: {}, detailMonths: [] };
+
+// ── Datos históricos hardcodeados (Ene-23 a Sep-25) — completados luego con SQL ──
+const HIST_DATA = {"months":["2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09"],"data":{"DEPOSITOS DE ARROZ":{"gasto":[2814585.06,5843283.75,6360268.33,7670532.56,7323813.7,8345126.69,18061359.77,6646984.96,11935730.13,7242548.2,30857930.09,23279830.47,31972526.91,18889479.34,25828730.07,28210408.28,29338231.49,15556400.51,19468144.67,29179648.21,17026147.81,24010134.8,26715634.04,42207326.46,14588178.39,27851003.59,60885768.16,34753456.01,31575780.18,36205564.53,25361272.6,20983606.78,21303166.04],"volumen":[5941.8,5397.2,6728.3,5138.1,5632.7,5398.3,5169.1,5162.3,4627.3,3890.8,3459.1,3313.7,3187,3506,6033,4984,5383,3602,4389,4590,4311,3894,2831,3339,3090,4368,5746,5752,5717,5349,5426,4279,5576]},"ENVASADORA":{"gasto":[10132072.18,9590703.31,11444813.47,11181128.92,10314368.87,21114845.5,13776833.84,16212396.99,17253573.67,20132707.46,18048596.52,29118548.67,29392961.45,30640662.05,39263765.8,45926064,45481514.96,58820418.6,55443818.14,50170548.32,52721048.97,54232081.35,58544579.14,80540164.28,57653209.8,58627833.24,77430845.62,68198660.12,67283796.54,98522411.8,72258938.63,67850827.81,63181452.54],"volumen":[2136.1,2305.3,2744.1,2669.5,2929.2,2683.1,3251.9,2635.3,2609.6,2152,1820.7,1539.6,1686,2057,2894,2346,2658,1781,2234,2493,2395,2080,1837,1721,1822.9,1966.6,2976.1,2945.6,3098,3086.7,2815.9,2286.7,2823.7]},"EXTRUSADO (Tostaditas)":{"gasto":[5193786.07,5222729.71,6799501.96,6475506.23,9929387.24,12051053.19,8171076.93,9321081.04,10646410.17,11129479.01,11575805.88,16756664.39,18210325.45,18400927.42,14254519.62,18258370.71,18428436.85,22755553.32,24362371.74,25900813.18,26601363.51,29323279.7,28847559.15,42199392.81,31982708.89,31467396.77,37067733.31,35415174.27,38159648.38,45559806.44,41439077.49,35404855.55,37350273.82],"volumen":[25.9,25.4,26.8,26.7,29.6,28.8,30,44.8,14.2,26.8,29.8,15.3,20.3,13.1,14.9,27.5,16.4,18.7,21.4,36.3,35.6,26.2,31.4,27.3,8.1,18.4,34.6,28.2,46.1,34,20,19.8,16.8]},"EXTRUSADO 2 (Snacks)":{"gasto":[5682062.58,7204530.09,7608614.11,7362175.1,6601653.78,12380860.7,8543933.3,10294342.32,11131896.01,11891225.81,11402274.98,17136290.1,21188037.95,25443213.97,25853958.04,24174813.3,20974403.15,26538714.34,33470117.09,37010602.7,32514953.11,35211995.67,37491891.43,57229752.31,46685737.63,40180131.28,56139350.53,46187064.84,45443938.62,66682181.3,56453947.16,52760210.55,40673083.65],"volumen":[100.8,60.6,77.5,82.2,81.8,121,81.1,80.1,69,76.1,71.9,60.5,49,59.4,40,35.8,35.3,29.9,55.5,79.6,63.6,64.4,53.9,79.9,71.4,59.8,84.7,85.1,78.7,56.8,71.1,72.7,62.4]},"GALLETAS SLIM":{"gasto":[5686506.8,5890373.46,7576476.29,7180052.31,7198116.45,13146734.49,9263056.92,10115935.6,10854140.64,12286857.41,11725857.61,21383155.34,19583768.97,19389131.29,25553156.07,26540007.52,27616179.8,36175098.04,39391144.49,36111567.91,35616773.12,41944277.91,41181233.29,62506805.47,46904435.71,49459526.14,49247945.27,54278786.4,55001848.11,66009131.59,57519641.63,55940412.14,48371714.16],"volumen":[39,39.8,48.4,38,45.7,47.5,46.9,47.7,50.1,50.4,46.9,39.1,45.2,40,45.9,40.3,43.4,45.1,44.8,49.8,47.2,48.6,44.3,47.4,49.1,49.3,49.1,49.9,46.8,53.5,55,55.5,52.5]},"MOLINO":{"gasto":[21146783.34,21455564.96,26607837.84,32876850.69,26646405.8,41522961.25,30084921.71,40709444.04,33602196.07,40255293.57,34533647.31,51157604.73,52721437.44,58935392.23,87289937.01,133035700.91,115867404.56,109795265.61,106803145.99,113598157.95,101932332.95,99922552.44,96461803.75,125133994.43,106656487.33,90856766.97,115787448.73,112307314.19,115913419.29,150909503.22,128113655.8,122829075.14,121291971.99],"volumen":[5941.8,5397.2,6728.3,5138.1,5632.7,5398.3,5169.1,5162.3,4627.3,3890.8,3459.1,3313.7,3187,3506,6033,4984,5383,3602,4389,4590,4311,3894,2831,3339,3090,4368,5746,5752,5717,5349,5426,4279,5576]},"MOLINO HARINA":{"gasto":[1045889.09,1218007.76,1011012.09,2744895.03,752435.81,1054123.28,1241729.26,879764.59,1162351.65,1151487.99,1864979.57,1550606.96,3408978.49,2872688.4,3063255.96,3744809.86,3965300.53,4576932.76,5418310.7,5855845.84,7089445.04,5621606.37,5159283.66,8627319.5,4936899.6,4353768.1,5343721.04,5092334.75,4892192.26,9845271.07,6245947.96,6394257.24,7876500.7],"volumen":[150.3,75.6,122.8,108.2,127,144.6,116.5,130.7,105,94.2,92.2,106.5,108,64.1,94.1,80,83.5,63.7,105,130,115,175,111,103,112.9,67,119.2,159.9,209.6,145.1,108.2,105.5,87.2]},"PLANTA PARBOIL":{"gasto":[11693135.53,5637701.79,15988888.1,12253524.09,15896778.15,16398646.76,18215927.64,22236065.96,18817516.9,19892864.11,19602486.62,29805298.01,30586626.37,22450027.71,30124479.03,42031387.06,47548777.05,49762107.83,49122871.12,47316837.68,52711937.11,53363251.72,60291471.76,56421028.64,55678334.55,42985499.99,48524027.18,51584275.44,54211857.75,70323237.29,65636459.36,51790138.99,63329061.31],"volumen":[1481.6,1677.2,1868.4,1709.7,1796.4,1810.4,1774.3,1784,1934.8,2107.3,1859.9,922.7,1741,2053,2120,1916,2042,1907,1969,2122,2092,2164,1981,801,1211.5,1912.4,1751.8,1795.8,1852.9,984.6,715.9,1427.4,1332]}}};
+// ── Costo estándar por sector ($ / tn) — se actualiza desde API si disponible
+const STD_COSTS = {
+  'MOLINO':28324, 'DEPOSITOS DE ARROZ':28324, 'ENVASADORA':32981,
+  'PLANTA PARBOIL':35691, 'MOLINO HARINA':81595, 'GALLETAS SLIM':1101533,
+  'EXTRUSADO 2 (Snacks)':838818, 'EXTRUSADO (Tostaditas)':2432754
+};
+
+// ── Mapeo respuesta /api/fabriles → sectores dashboard ────────────────────
+const MESES_ES = {
+  'Ene':'01','Feb':'02','Mar':'03','Abr':'04','May':'05','Jun':'06',
+  'Jul':'07','Ago':'08','Sep':'09','Oct':'10','Nov':'11','Dic':'12'
+};
+function mesToYM(label) {
+  const p = label.split('-');
+  return (2000 + parseInt(p[1])) + '-' + (MESES_ES[p[0]] || '01');
+}
+const API_SECTOR_MAP = {
+  'Molienda':'MOLINO', 'Elaborado':'ENVASADORA', 'Parboil':'PLANTA PARBOIL',
+  'Harina':'MOLINO HARINA', 'Depósito':'DEPOSITOS DE ARROZ',
+  'SLIM':'GALLETAS SLIM', 'Snacks':'EXTRUSADO 2 (Snacks)', 'Tostaditas':'EXTRUSADO (Tostaditas)'
+};
+
+const SECTORS = ['MOLINO','DEPOSITOS DE ARROZ','ENVASADORA','PLANTA PARBOIL','MOLINO HARINA','GALLETAS SLIM','EXTRUSADO 2 (Snacks)','EXTRUSADO (Tostaditas)'];
+const COLORS = {
+  'DEPOSITOS DE ARROZ':  '#d8252b',
+  'ENVASADORA':          '#1f77b4',
+  'EXTRUSADO (Tostaditas)': '#ff7f0e',
+  'EXTRUSADO 2 (Snacks)': '#2ca02c',
+  'GALLETAS SLIM':       '#9467bd',
+  'MOLINO':              '#8c564b',
+  'MOLINO HARINA':       '#e377c2',
+  'PLANTA PARBOIL':      '#17becf',
+};
+
+// ============== UTIL ==============
+function fmt$(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  const abs = Math.abs(v);
+  if (abs >= 1e9) return '$' + (v/1e9).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' B';
+  if (abs >= 1e6) return '$' + (v/1e6).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1}) + ' M';
+  return '$' + Math.round(v).toLocaleString('es-AR');
+}
+function fmtTn(v) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return v.toLocaleString('es-AR', {maximumFractionDigits: 1}) + ' tn';
+}
+function fmtCostTn(v) {
+  if (v === null || v === undefined || isNaN(v) || !isFinite(v)) return '—';
+  if (Math.abs(v) >= 1e6) return '$' + (v/1e6).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' M/tn';
+  return '$' + Math.round(v).toLocaleString('es-AR') + '/tn';
+}
+function fmtPct(v) {
+  if (v === null || isNaN(v)) return '—';
+  return (v*100).toFixed(1) + '%';
+}
+function addMonths(ym, n) {
+  const [y,m] = ym.split('-').map(Number);
+  const d = new Date(y, m-1+n, 1);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+// ============== PROYECCIÓN ==============
+// Lógica:
+// - Gasto: real hasta nRealGasto-1 (último mes con dato del cubo, abr-2026). Después se proyecta.
+// - Volumen: real hasta abr-2026, presupuestado may-dic 2026 (cargado), proyectado después.
+function calcProjections() {
+  const infGastos  = parseFloat(document.getElementById('infGastos').value) / 100;
+  const infVol     = parseFloat(document.getElementById('infVol').value) / 100;
+  const nProjAfter = parseInt(document.getElementById('projMonths').value);
+  const useSeas    = document.getElementById('useSeasonality').value === '1';
+
+  const monthsBase  = RAW.months.slice();
+  const lastBase    = monthsBase[monthsBase.length - 1];
+  const monthsAfter = [];
+  for (let k = 1; k <= nProjAfter; k++) monthsAfter.push(addMonths(lastBase, k));
+  const monthsFull = monthsBase.concat(monthsAfter);
+
+  const nReal = RAW.nRealGasto;
+  const SEAS  = RAW.seasonality || {};
+
+  const coefFor = (sec, ym) => {
+    if (!useSeas || !SEAS[sec]) return 1.0;
+    return SEAS[sec][parseInt(ym.split('-')[1])] || 1.0;
+  };
+
+  // Usar el último mes CERRADO como base de proyección (el mes en curso tiene datos parciales)
+  const closedKey = RAW.lastClosedMonth || '';
+  const closedIdxGlobal = closedKey ? monthsBase.indexOf(closedKey) : nReal - 1;
+
+  const result = {};
+  SECTORS.forEach(sec => {
+    const dHist = RAW.data[sec];
+
+    // Partir del último mes cerrado; retroceder si ese sector no tiene dato para ese mes
+    let lastIdx = closedIdxGlobal >= 0 ? closedIdxGlobal : nReal - 1;
+    while (lastIdx > 0 && !dHist.gasto[lastIdx]) lastIdx--;
+    const lastGasto = dHist.gasto[lastIdx] || 0;
+    const lastVol   = dHist.volumen[lastIdx] || 0;
+    const lastYM    = monthsBase[lastIdx];
+
+    // Base desestacionalizada: divide por el coef del mes actual para proyectar sin sesgo
+    const baseDeseas = lastGasto > 0 ? lastGasto / coefFor(sec, lastYM) : 0;
+
+    // Gasto: real donde existe, proyectado con tasa compuesta + estacionalidad donde no
+    const gastoFull = [];
+    for (let i = 0; i < monthsBase.length; i++) {
+      if (i <= lastIdx && dHist.gasto[i] !== null) {
+        gastoFull.push(dHist.gasto[i]);
+      } else {
+        const k = i - lastIdx;
+        gastoFull.push(baseDeseas * Math.pow(1 + infGastos, k) * coefFor(sec, monthsBase[i]));
+      }
+    }
+    for (let k = 1; k <= nProjAfter; k++) {
+      const kTotal = monthsBase.length - lastIdx - 1 + k;
+      gastoFull.push(baseDeseas * Math.pow(1 + infGastos, kTotal) * coefFor(sec, monthsAfter[k - 1]));
+    }
+
+    // Volumen: real donde existe, proyectado donde no
+    const volFull = [];
+    for (let i = 0; i < monthsBase.length; i++) {
+      if (dHist.volumen[i] !== null) {
+        volFull.push(dHist.volumen[i]);
+      } else {
+        const k = i - lastIdx;
+        volFull.push(lastVol * Math.pow(1 + infVol, k));
+      }
+    }
+    for (let k = 1; k <= nProjAfter; k++) {
+      const kTotal = monthsBase.length - lastIdx - 1 + k;
+      volFull.push(lastVol * Math.pow(1 + infVol, kTotal));
+    }
+
+    const costTn = gastoFull.map((g, i) => {
+      const v = volFull[i];
+      return (g && v && v > 0) ? g / v : null;
+    });
+
+    result[sec] = { gasto: gastoFull, volumen: volFull, costTn };
+  });
+
+  return { months: monthsFull, byS: result, nHist: nReal, nBase: monthsBase.length };
+}
+
+function renderKPIs(proj) {
+  const nH = proj.nHist;
+  // Gasto total último mes histórico
+  let gLastHist = 0, gLastProj = 0, gAvg6 = 0;
+  SECTORS.forEach(sec => {
+    const d = proj.byS[sec];
+    gLastHist += (d.gasto[nH-1] || 0);
+    gLastProj += (d.gasto[d.gasto.length-1] || 0);
+    // promedio 6 últimos hist
+    const last6 = d.gasto.slice(nH-6, nH);
+    gAvg6 += last6.reduce((a,b)=>a+(b||0),0)/6;
+  });
+  // Acumulado real año en curso + proyectado año en curso
+  const currentYear = new Date().getFullYear().toString();
+  let gYTD = 0, gProjYear = 0;
+  SECTORS.forEach(sec => {
+    const d = proj.byS[sec];
+    proj.months.forEach((m, i) => {
+      if (!m.startsWith(currentYear)) return;
+      if (i < nH) gYTD     += (d.gasto[i] || 0);
+      else        gProjYear += (d.gasto[i] || 0);
+    });
+  });
+  // costo/tn ponderado último mes
+  let gT=0, vT=0;
+  SECTORS.forEach(sec => {
+    const d = proj.byS[sec];
+    gT += (d.gasto[nH-1]||0);
+    vT += (d.volumen[nH-1]||0);
+  });
+  const costTnNow = vT>0 ? gT/vT : null;
+
+  const acumKpiSub = gProjYear > 0
+    ? `Real: ${fmt$(gYTD)} · Proy: ${fmt$(gProjYear)}`
+    : `Solo real YTD ${currentYear}`;
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi red">
+      <div class="kpi-label">Costo/tn ponderado actual</div>
+      <div class="kpi-value">${fmtCostTn(costTnNow)}</div>
+      <div class="kpi-sub">${proj.months[nH-1]} · gasto total / tn total</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Gasto último mes real</div>
+      <div class="kpi-value">${fmt$(gLastHist)}</div>
+      <div class="kpi-sub">${proj.months[nH-1]}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Promedio últimos 6 meses</div>
+      <div class="kpi-value">${fmt$(gAvg6)}</div>
+      <div class="kpi-sub">Base de proyección</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Acumulado + proyectado ${currentYear}</div>
+      <div class="kpi-value">${fmt$(gYTD + gProjYear)}</div>
+      <div class="kpi-sub">${acumKpiSub}</div>
+    </div>
+  `;
+}
+
+function renderSectorCards(proj) {
+  const nH = proj.nHist;
+  const grid = document.getElementById('sectorCards');
+  grid.innerHTML = '';
+  SECTORS.forEach(sec => {
+    const d = proj.byS[sec];
+    // último mes real
+    let lastIdx = nH-1;
+    while (lastIdx > 0 && (!d.volumen[lastIdx] || !d.gasto[lastIdx])) lastIdx--;
+    const cost = d.costTn[lastIdx];
+    const monthLabel = proj.months[lastIdx] || '—';
+    // tendencia: prom últimos 3 vs 3 anteriores
+    const t1 = []; const t2 = [];
+    for (let i=lastIdx-2; i<=lastIdx; i++) if (d.costTn[i] && isFinite(d.costTn[i])) t1.push(d.costTn[i]);
+    for (let i=lastIdx-5; i<=lastIdx-3; i++) if (d.costTn[i] && isFinite(d.costTn[i])) t2.push(d.costTn[i]);
+    const a1 = t1.length ? t1.reduce((a,b)=>a+b,0)/t1.length : null;
+    const a2 = t2.length ? t2.reduce((a,b)=>a+b,0)/t2.length : null;
+    const trend = (a1 && a2) ? (a1-a2)/a2 : null;
+    const trendCls = trend !== null ? (trend>0 ? 'trend-up' : 'trend-down') : '';
+    const trendArrow = trend !== null ? (trend>0 ? '▲' : '▼') : '';
+
+    const lastProjCost = d.costTn[d.costTn.length-1];
+    const projChange = (cost && lastProjCost) ? (lastProjCost-cost)/cost : null;
+
+    grid.innerHTML += `
+      <div class="sector-card" style="border-top-color: ${COLORS[sec]}">
+        <div class="sector-name" style="color: ${COLORS[sec]}">${sec}</div>
+        <div class="sector-cost">${fmtCostTn(cost)}</div>
+        <div class="sector-cost-label">Costo/tn · ${monthLabel}</div>
+        <div class="sector-meta">
+          <div><span>Volumen mes</span><span>${fmtTn(d.volumen[lastIdx])}</span></div>
+          <div><span>Tendencia 3m</span><span class="${trendCls}">${trendArrow} ${trend!==null?fmtPct(trend):'—'}</span></div>
+          
+        </div>
+      </div>
+    `;
+  });
+}
+
+function renderChartCostTn(proj) {
+  const ctx = document.getElementById('chartCostTn').getContext('2d');
+  const datasets = SECTORS.filter(s => visibleSectors.has(s)).map(sec => {
+    const d = proj.byS[sec];
+    return {
+      label: sec,
+      data: d.costTn,
+      borderColor: COLORS[sec],
+      backgroundColor: COLORS[sec] + '20',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.25,
+      borderDash: ctx => ctx.p0DataIndex >= proj.nHist ? [4,4] : [],
+      segment: {
+        borderDash: ctx => ctx.p1DataIndex >= proj.nHist ? [4,4] : undefined,
+      }
+    };
+  });
+  if (chartCost) chartCost.destroy();
+  chartCost = new Chart(ctx, {
+    type: 'line',
+    data: { labels: proj.months, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => `${c.dataset.label}: ${fmtCostTn(c.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          type: 'logarithmic',
+          ticks: {
+            maxTicksLimit: 8,
+            callback: v => {
+              const r = Math.round(v);
+              if (/^[125]0*$/.test(r.toString())) return fmtCostTn(v);
+              return null;
+            }
+          }
+        },
+        x: { ticks: { maxRotation: 60, minRotation: 0, autoSkip: true, maxTicksLimit: 14 } }
+      },
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
+    }
+  });
+}
+
+function renderChartGasto(proj) {
+  const ctx = document.getElementById('chartGasto').getContext('2d');
+  const totals = proj.months.map((_, i) => {
+    let s = 0;
+    SECTORS.forEach(sec => s += proj.byS[sec].gasto[i] || 0);
+    return s;
+  });
+  const colorsBar = totals.map((_, i) => i >= proj.nHist ? '#ffa726' : '#0d0d0d');
+  if (chartGasto) chartGasto.destroy();
+  chartGasto = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: proj.months,
+      datasets: [{
+        label: 'Gasto total',
+        data: totals,
+        backgroundColor: colorsBar,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => fmt$(c.parsed.y) } }
+      },
+      scales: {
+        y: { ticks: { callback: v => fmt$(v) } },
+        x: { ticks: { maxRotation: 60, autoSkip: true, maxTicksLimit: 14 } }
+      }
+    }
+  });
+}
+
+function renderChips() {
+  const chipsDiv = document.getElementById('chartChips');
+  chipsDiv.innerHTML = '';
+  SECTORS.forEach(sec => {
+    const c = document.createElement('div');
+    c.className = 'chip ' + (visibleSectors.has(sec) ? 'active' : '');
+    c.style.borderLeft = `3px solid ${COLORS[sec]}`;
+    c.textContent = sec;
+    c.onclick = () => {
+      if (visibleSectors.has(sec)) visibleSectors.delete(sec);
+      else visibleSectors.add(sec);
+      renderChips();
+      renderChartCostTn(currentProj);
+    };
+    chipsDiv.appendChild(c);
+  });
+}
+
+function renderTable(proj) {
+  const tbl = document.getElementById('detailTable');
+  const nH   = proj.nHist;
+  const curYr = new Date().getFullYear().toString();
+  const TC    = 1450;
+  const nMes  = proj.months.length;
+
+  const cc = (i, extra) => {
+    const cls = [];
+    if (proj.months[i]?.startsWith(curYr)) cls.push('yr26');
+    if (i >= nH) cls.push('proj');
+    if (extra) cls.push(extra);
+    return cls.join(' ');
+  };
+
+  let html = '<thead><tr>';
+  html += `<th style="min-width:140px">Sector</th>`;
+  html += `<th class="row-lbl">Indicador</th>`;
+  proj.months.forEach((m, i) => {
+    const cls = [m.startsWith(curYr)?'yr26':'', i>=nH?'proj':''].filter(Boolean).join(' ');
+    html += `<th class="${cls}">${m}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  SECTORS.forEach(sec => {
+    const d   = proj.byS[sec];
+    const std = STD_COSTS[sec];
+    const col = COLORS[sec];
+
+    html += `<tr class="group-hdr">`;
+    html += `<td style="color:${col};border-left:3px solid ${col}">${sec}</td>`;
+    html += `<td class="grp-span" colspan="${nMes}"></td>`;
+    html += `</tr>`;
+
+    // Gasto ($)
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl">Gasto $</td>`;
+    proj.months.forEach((_, i) => {
+      html += `<td class="${cc(i,'neg')}">${fmt$(d.gasto[i])}</td>`;
+    });
+    html += '</tr>';
+
+    // Volumen (tn)
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl">Volumen tn</td>`;
+    proj.months.forEach((_, i) => {
+      const v = d.volumen[i];
+      html += `<td class="${cc(i)}">${v!=null ? v.toLocaleString('es-AR',{maximumFractionDigits:1}) : '—'}</td>`;
+    });
+    html += '</tr>';
+
+    // $/tn
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl">$/tn</td>`;
+    proj.months.forEach((_, i) => {
+      const c = d.costTn[i];
+      let badge = '';
+      if (std && c && isFinite(c)) {
+        const p = (c - std) / std;
+        badge = ` <small class="${p>=0?'trend-up':'trend-down'}">${p>=0?'+':''}${(p*100).toFixed(0)}%</small>`;
+      }
+      html += `<td class="${cc(i)}" style="font-weight:500">${fmtCostTn(c)}${badge}</td>`;
+    });
+    html += '</tr>';
+
+    // USD/tn (italic)
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl" style="font-style:italic;color:#aaa">USD/tn</td>`;
+    proj.months.forEach((_, i) => {
+      const c = d.costTn[i];
+      const usd = c!=null && isFinite(c) ? Math.round(c/TC) : null;
+      html += `<td class="${cc(i)}" style="font-style:italic;color:#999;font-size:10px">${usd!=null ? 'USD '+usd.toLocaleString('es-AR') : '—'}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+function switchTableTab(tab) {
+  document.querySelectorAll('#tableTabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.getElementById('tabCosto').style.display = tab === 'costo' ? '' : 'none';
+  document.getElementById('tabStd').style.display   = tab === 'std'   ? '' : 'none';
+  if (tab === 'std' && currentProj) renderTableStd(currentProj);
+}
+
+function renderTableStd(proj) {
+  const tbl   = document.getElementById('stdTable');
+  const nH    = proj.nHist;
+  const curYr = new Date().getFullYear().toString();
+  const nMes  = proj.months.length;
+
+  const cc = (i, extra) => {
+    const cls = [];
+    if (proj.months[i]?.startsWith(curYr)) cls.push('yr26');
+    if (i >= nH) cls.push('proj');
+    if (extra) cls.push(extra);
+    return cls.join(' ');
+  };
+
+  // MOLINO + DEPOSITOS se combinan: gasto sumado, volumen sumado → $/tn conjunto vs std único
+  const groups = [
+    { name: 'MOLINO + DEPOSITOS DE ARROZ', sectors: ['MOLINO', 'DEPOSITOS DE ARROZ'], std: STD_COSTS['MOLINO'], col: COLORS['MOLINO'] },
+    ...SECTORS
+      .filter(s => s !== 'MOLINO' && s !== 'DEPOSITOS DE ARROZ')
+      .map(s => ({ name: s, sectors: [s], std: STD_COSTS[s], col: COLORS[s] }))
+  ];
+
+  let html = '<thead><tr>';
+  html += `<th style="min-width:140px">Sector</th>`;
+  html += `<th class="row-lbl">Indicador</th>`;
+  proj.months.forEach((m, i) => {
+    const cls = [m.startsWith(curYr)?'yr26':'', i>=nH?'proj':''].filter(Boolean).join(' ');
+    html += `<th class="${cls}">${m}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  groups.forEach(({ name, sectors, std, col }) => {
+    // Sumar gasto y volumen de todos los sectores del grupo
+    const gasto  = proj.months.map((_, i) => {
+      let sum = 0, ok = false;
+      sectors.forEach(s => { const v = proj.byS[s]?.gasto[i]; if (v!=null) { sum += v; ok = true; } });
+      return ok ? sum : null;
+    });
+    const volumen = proj.months.map((_, i) => {
+      let sum = 0, ok = false;
+      sectors.forEach(s => { const v = proj.byS[s]?.volumen[i]; if (v!=null) { sum += v; ok = true; } });
+      return ok ? sum : null;
+    });
+    const costTn = proj.months.map((_, i) => {
+      const g = gasto[i], v = volumen[i];
+      return (g!=null && v!=null && v>0) ? g/v : null;
+    });
+
+    html += `<tr class="group-hdr">`;
+    html += `<td style="color:${col};border-left:3px solid ${col}">${name}${std ? ' <span style="font-weight:400;font-size:10px;color:#999">Std: '+fmtCostTn(std)+'</span>' : ''}</td>`;
+    html += `<td class="grp-span" colspan="${nMes}"></td>`;
+    html += `</tr>`;
+
+    // $/tn real (combinado)
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl">$/tn real</td>`;
+    proj.months.forEach((_, i) => {
+      html += `<td class="${cc(i)}">${fmtCostTn(costTn[i])}</td>`;
+    });
+    html += '</tr>';
+
+    // Desvío %
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl">Desvío %</td>`;
+    proj.months.forEach((_, i) => {
+      const c = costTn[i];
+      if (!std || c==null || !isFinite(c)) { html += `<td class="${cc(i)}">—</td>`; return; }
+      const p = (c - std) / std;
+      html += `<td class="${cc(i, p>=0?'neg':'pos')}">${(p>=0?'+':'')+(p*100).toFixed(1)}%</td>`;
+    });
+    html += '</tr>';
+
+    // Diferencia $/tn
+    html += `<tr><td style="border-left:3px solid ${col}"></td><td class="row-lbl">Dif $/tn</td>`;
+    proj.months.forEach((_, i) => {
+      const c = costTn[i];
+      if (!std || c==null || !isFinite(c)) { html += `<td class="${cc(i)}">—</td>`; return; }
+      const diff = c - std;
+      html += `<td class="${cc(i, diff>=0?'neg':'pos')}">${diff>=0?'+':''}${fmtCostTn(Math.abs(diff))}</td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+// ============== STATE & EVENTS ==============
+let currentProj = null;
+let chartCost = null, chartGasto = null;
+let visibleSectors = new Set(SECTORS);
+let currentView = 'costo';
+
+function saveState() {
+  const state = {
+    infVol: document.getElementById('infVol').value,
+    projMonths: document.getElementById('projMonths').value,
+    useSeasonality: document.getElementById('useSeasonality').value,
+  };
+  localStorage.setItem('doshermanos_dashboard_v2', JSON.stringify(state));
+}
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('doshermanos_dashboard_v2') || '{}');
+    if (s.infVol) document.getElementById('infVol').value = s.infVol;
+    if (s.projMonths !== undefined && s.projMonths !== null) {
+      const opts = ['0','3','6','12'];
+      if (opts.includes(String(s.projMonths))) {
+        document.getElementById('projMonths').value = s.projMonths;
+      }
+    }
+    if (s.useSeasonality !== undefined && s.useSeasonality !== null) {
+      document.getElementById('useSeasonality').value = s.useSeasonality;
+    }
+  } catch(e) {}
+}
+function resetData() {
+  localStorage.removeItem('doshermanos_dashboard');
+  localStorage.removeItem('doshermanos_dashboard_v2');
+  location.reload();
+}
+
+function refresh() {
+  saveState();
+  try { currentProj = calcProjections(); } catch(e) {
+    document.getElementById('kpis').innerHTML = '<div style="color:red;padding:16px;font-family:monospace">Error en calcProjections: ' + e.message + '<br>' + (e.stack||'').split('\n')[1] + '</div>';
+    console.error('calcProjections error:', e); return;
+  }
+  renderKPIs(currentProj);
+  renderSectorCards(currentProj);
+  try { renderChips(); } catch(e) { console.error('renderChips',e); }
+  try { renderChartCostTn(currentProj); } catch(e) { console.error('renderChartCostTn',e); document.getElementById('chartCostTn')?.closest('.card')?.insertAdjacentHTML('beforeend','<p style="color:red">Error: '+e.message+'</p>'); }
+  try { renderChartGasto(currentProj); } catch(e) { console.error('renderChartGasto',e); document.getElementById('chartGasto')?.closest('.card')?.insertAdjacentHTML('beforeend','<p style="color:red">Error: '+e.message+'</p>'); }
+  try { renderTable(currentProj); } catch(e) { console.error('renderTable',e); document.getElementById('mainTable')?.insertAdjacentHTML('beforebegin','<p style="color:red">Error renderTable: '+e.message+'</p>'); }
+}
+
+function exportCSV() {
+  const proj = currentProj;
+  const hdr = ['Sector', 'Métrica', ...proj.months].join(',');
+  const rows = [hdr];
+  SECTORS.forEach(sec => {
+    const d = proj.byS[sec];
+    const gastoRow  = [sec, 'Gasto ($)',    ...proj.months.map((_, i) => d.gasto[i]   != null ? Math.round(d.gasto[i])   : '')];
+    const volRow    = [sec, 'Volumen (tn)', ...proj.months.map((_, i) => d.volumen[i] != null ? +d.volumen[i].toFixed(1)  : '')];
+    const costoRow  = [sec, '$/tn',         ...proj.months.map((_, i) => d.costTn[i]  != null && isFinite(d.costTn[i]) ? Math.round(d.costTn[i]) : '')];
+    rows.push(gastoRow.join(','), volRow.join(','), costoRow.join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type: 'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dos_hermanos_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+const refreshDebounced = debounce(refresh, 350);
+['infGastos','infVol'].forEach(id => {
+  document.getElementById(id).addEventListener('change', refresh);
+  document.getElementById(id).addEventListener('input', refreshDebounced);
+});
+['projMonths','useSeasonality'].forEach(id => {
+  document.getElementById(id).addEventListener('change', refresh);
+  document.getElementById(id).addEventListener('input', refresh);
+});
+
+// ============================================================
+// ========== PÁGINA DE ANÁLISIS DETALLADO ====================
+// ============================================================
+
+const DETAIL = RAW.detail || {};
+let DETAIL_MONTHS = RAW.detailMonths || RAW.months.slice(0, RAW.nRealGasto);
+const RUBRO_COLORS = ['#d8252b','#0d0d0d','#1f77b4','#2ca02c','#ff7f0e','#9467bd','#8c564b','#17becf','#e377c2','#bcbd22'];
+
+let chartPie = null, chartTime = null, chartRubroBySec = null;
+
+function getPeriodMask() {
+  const desde = document.getElementById('detDesde').value;
+  const hasta = document.getElementById('detHasta').value;
+  const desdeM = desde ? desde.substring(0, 7) : '';
+  const hastaM = hasta ? hasta.substring(0, 7) : '';
+  return DETAIL_MONTHS.map(m => {
+    if (desdeM && m < desdeM) return false;
+    if (hastaM && m > hastaM) return false;
+    return true;
+  });
+}
+
+function periodLabel() {
+  const desde = document.getElementById('detDesde').value;
+  const hasta = document.getElementById('detHasta').value;
+  const MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const fmt = d => { const p = d.split('-'); return parseInt(p[2],10) + '-' + MES[parseInt(p[1])-1] + '-' + p[0]; };
+  if (!desde && !hasta) return 'Todo el histórico';
+  if (desde && hasta) return fmt(desde) + ' a ' + fmt(hasta);
+  if (desde) return 'Desde ' + fmt(desde);
+  return 'Hasta ' + fmt(hasta);
+}
+
+function renderDetailKPIs(rubrosTotals, total, n_meses) {
+  const top1 = rubrosTotals[0];
+  const concentracion3 = rubrosTotals.slice(0,3).reduce((a,b)=>a+b[1],0) / total;
+  const avgMensual = total / Math.max(1, n_meses);
+
+  document.getElementById('detKpis').innerHTML = `
+    <div class="kpi red">
+      <div class="kpi-label">Gasto total del sector</div>
+      <div class="kpi-value">${fmt$(total)}</div>
+      <div class="kpi-sub">${periodLabel()} · ${n_meses} mes${n_meses!==1?'es':''}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Promedio mensual</div>
+      <div class="kpi-value">${fmt$(avgMensual)}</div>
+      <div class="kpi-sub">Gasto por mes</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Rubro líder</div>
+      <div class="kpi-value" style="font-size:17px">${top1 ? top1[0].slice(0,22) : '—'}</div>
+      <div class="kpi-sub">${top1 ? fmt$(top1[1]) + ' · ' + fmtPct(top1[1]/total) : '—'}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Concentración top 3</div>
+      <div class="kpi-value">${fmtPct(concentracion3)}</div>
+      <div class="kpi-sub">Peso de los 3 rubros principales</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Cuentas activas</div>
+      <div class="kpi-value">${rubrosTotals.length}</div>
+      <div class="kpi-sub">Con gasto en el período</div>
+    </div>
+  `;
+}
+
+function renderTopRubros(rubrosTotals, total) {
+  const max = rubrosTotals.length ? rubrosTotals[0][1] : 1;
+  const container = document.getElementById('detTopRubros');
+  container.innerHTML = rubrosTotals.slice(0, 20).map(([r, v], i) => `
+    <div class="bar-row">
+      <div class="lbl">${r}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/max*100).toFixed(1)}%; background: linear-gradient(90deg, ${RUBRO_COLORS[i % RUBRO_COLORS.length]}, ${RUBRO_COLORS[i % RUBRO_COLORS.length]}cc)"></div></div>
+      <div class="val">${fmt$(v)}</div>
+      <div class="pct">${fmtPct(v/total)}</div>
+    </div>
+  `).join('');
+}
+
+function renderRubrosPie(rubrosTotals, total) {
+  const ctx = document.getElementById('chartRubrosPie').getContext('2d');
+  const top = rubrosTotals.slice(0, 7);
+  const otros = rubrosTotals.slice(7).reduce((a,b)=>a+b[1], 0);
+  const labels = top.map(([r])=>r).concat(otros>0 ? ['Otros'] : []);
+  const data = top.map(([_,v])=>v).concat(otros>0 ? [otros] : []);
+  if (chartPie) chartPie.destroy();
+  chartPie = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: RUBRO_COLORS.concat(['#bbb']) }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => `${c.label}: ${fmt$(c.parsed)} (${fmtPct(c.parsed/total)})` } }
+      }
+    }
+  });
+}
+
+function renderRubrosTime(rubrosTotals, detData, mask) {
+  const ctx = document.getElementById('chartRubrosTime').getContext('2d');
+  const top5 = rubrosTotals.slice(0, 5).map(([r])=>r);
+  const labels = DETAIL_MONTHS.filter((_,i)=>mask[i]);
+  const datasets = top5.map((r, i) => ({
+    label: r,
+    data: DETAIL_MONTHS.map((_,j)=>mask[j] ? (detData[r] ? detData[r][j] : 0) : null).filter(v => v !== null),
+    backgroundColor: RUBRO_COLORS[i] + 'cc',
+    borderColor: RUBRO_COLORS[i],
+    borderWidth: 1,
+    stack: 's1',
+  }));
+  // Otros rubros agrupados
+  const otrosKeys = rubrosTotals.slice(5).map(([r])=>r);
+  const otrosData = labels.map((_, k) => {
+    let s = 0;
+    otrosKeys.forEach(r => {
+      const ix = DETAIL_MONTHS.indexOf(labels[k]);
+      if (detData[r] && ix >= 0) s += detData[r][ix];
+    });
+    return s;
+  });
+  if (otrosData.some(v => v>0)) {
+    datasets.push({ label:'Otros', data: otrosData, backgroundColor: '#bbbbbbcc', borderColor:'#999', borderWidth:1, stack:'s1' });
+  }
+  if (chartTime) chartTime.destroy();
+  chartTime = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font:{size:11} } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fmt$(c.parsed.y)}` } }
+      },
+      scales: {
+        x: { stacked: true, ticks: { maxRotation: 60, autoSkip:true, maxTicksLimit: 14 } },
+        y: { stacked: true, ticks: { callback: v => fmt$(v) } }
+      }
+    }
+  });
+}
+
+function renderHeatmap(rubrosTotals, detData, mask) {
+  const tbl = document.getElementById('detHeatmap');
+  const visibleMonths = DETAIL_MONTHS.filter((m,i) => mask[i] && rubrosTotals.some(([r]) => detData[r] && detData[r][i] > 0));
+  // Find global max for color scale
+  let gmax = 0;
+  rubrosTotals.forEach(([r]) => {
+    visibleMonths.forEach(m => {
+      const idx = DETAIL_MONTHS.indexOf(m);
+      const v = detData[r] ? detData[r][idx] : 0;
+      if (v > gmax) gmax = v;
+    });
+  });
+  let html = '<thead><tr><th>Rubro</th>';
+  visibleMonths.forEach(m => html += `<th>${m}</th>`);
+  html += '<th style="background:#0d0d0d;color:white">Total</th></tr></thead><tbody>';
+  rubrosTotals.forEach(([r, total]) => {
+    html += `<tr><td style="font-weight:600">${r}</td>`;
+    visibleMonths.forEach(m => {
+      const idx = DETAIL_MONTHS.indexOf(m);
+      const v = detData[r] ? detData[r][idx] : 0;
+      const intensity = gmax > 0 ? Math.min(1, v/gmax) : 0;
+      const bg = intensity > 0 ? `rgba(216, 37, 43, ${0.04 + intensity * 0.45})` : 'transparent';
+      const cls = v === 0 ? 'cell zero' : 'cell';
+      html += `<td class="${cls}" style="background:${bg}">${v ? fmt$(v) : '—'}</td>`;
+    });
+    html += `<td style="background:#fafafa;font-weight:700">${fmt$(total)}</td></tr>`;
+  });
+  // Total mensual row
+  html += '<tr style="background:#0d0d0d;color:white"><td style="background:#0d0d0d;color:white;font-weight:700">TOTAL</td>';
+  let grandTotal = 0;
+  visibleMonths.forEach(m => {
+    const idx = DETAIL_MONTHS.indexOf(m);
+    let s = 0;
+    rubrosTotals.forEach(([r]) => { if (detData[r]) s += detData[r][idx]; });
+    grandTotal += s;
+    html += `<td style="color:white;font-weight:700">${fmt$(s)}</td>`;
+  });
+  html += `<td style="background:#d8252b;color:white;font-weight:700">${fmt$(grandTotal)}</td></tr>`;
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+function renderRubroBySector() {
+  const rubro = document.getElementById('detRubroCompare').value;
+  const ctx = document.getElementById('chartRubroBySector').getContext('2d');
+  const mask = getPeriodMask();
+  // total del rubro en cada sector
+  const labels = [];
+  const data = [];
+  Object.keys(DETAIL).forEach(sec => {
+    const vals = DETAIL[sec][rubro];
+    if (vals) {
+      const total = vals.reduce((a,b,i) => a + (mask[i] ? b : 0), 0);
+      if (total > 0) {
+        labels.push(sec);
+        data.push(total);
+      }
+    }
+  });
+  // Sort desc
+  const pairs = labels.map((l,i) => [l, data[i]]).sort((a,b) => b[1]-a[1]);
+  if (chartRubroBySec) chartRubroBySec.destroy();
+  chartRubroBySec = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: pairs.map(p=>p[0]),
+      datasets: [{ label: rubro, data: pairs.map(p=>p[1]), backgroundColor: '#d8252b', borderRadius: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => fmt$(c.parsed.x) } }
+      },
+      scales: { x: { ticks: { callback: v => fmt$(v) } } }
+    }
+  });
+}
+
+function getSelectedSectors() {
+  return [...document.querySelectorAll('#detSectorChips .chip.active[data-sec]')].map(c => c.dataset.sec);
+}
+
+function refreshDetail() {
+  const sectors = getSelectedSectors();
+  const mask = getPeriodMask();
+  const n_meses = mask.filter(x=>x).length;
+
+  // Combinar datos de todos los sectores seleccionados
+  const mergedData = {};
+  sectors.forEach(sec => {
+    const d = DETAIL[sec] || {};
+    Object.keys(d).forEach(r => {
+      if (!mergedData[r]) mergedData[r] = DETAIL_MONTHS.map(() => 0);
+      d[r].forEach((v, i) => { mergedData[r][i] += (v || 0); });
+    });
+  });
+
+  const rubrosTotals = [];
+  Object.keys(mergedData).forEach(r => {
+    const total = mergedData[r].reduce((a,b,i) => a + (mask[i] ? b : 0), 0);
+    if (total > 0) rubrosTotals.push([r, total]);
+  });
+  rubrosTotals.sort((a,b) => b[1]-a[1]);
+  const grandTotal = rubrosTotals.reduce((a,b)=>a+b[1], 0);
+
+  renderDetailKPIs(rubrosTotals, grandTotal, n_meses);
+  renderTopRubros(rubrosTotals, grandTotal);
+  renderRubrosTime(rubrosTotals, mergedData, mask);
+  renderHeatmap(rubrosTotals, mergedData, mask);
+  renderRubroBySector();
+}
+
+function exportDetailCSV() {
+  const sectors = getSelectedSectors();
+  const mask = getPeriodMask();
+  const mergedData = {};
+  sectors.forEach(sec => {
+    const d = DETAIL[sec] || {};
+    Object.keys(d).forEach(r => {
+      if (!mergedData[r]) mergedData[r] = DETAIL_MONTHS.map(() => 0);
+      d[r].forEach((v, i) => { mergedData[r][i] += (v || 0); });
+    });
+  });
+  const visibleMonths = DETAIL_MONTHS.filter((m,i) => mask[i]);
+  const rubros = Object.keys(mergedData).filter(r => mergedData[r].some((v,i)=>mask[i] && v>0));
+  rubros.sort((a,b) => {
+    const sa = mergedData[a].reduce((acc,v,i)=>acc+(mask[i]?v:0),0);
+    const sb = mergedData[b].reduce((acc,v,i)=>acc+(mask[i]?v:0),0);
+    return sb - sa;
+  });
+  const sectorLabel = sectors.length === Object.keys(DETAIL).length ? 'Todos' : sectors.join('+');
+  let rows = [['Sectores','Rubro', ...visibleMonths,'Total'].join(',')];
+  rubros.forEach(r => {
+    const row = ['"'+sectorLabel+'"', '"'+r+'"'];
+    let total = 0;
+    visibleMonths.forEach(m => {
+      const idx = DETAIL_MONTHS.indexOf(m);
+      const v = mergedData[r][idx] || 0;
+      total += v;
+      row.push(Math.round(v));
+    });
+    row.push(Math.round(total));
+    rows.push(row.join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `detalle_${sectorLabel.replace(/[^a-z0-9]/gi,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function initDetailPage() {
+  // Chips multi-selección de sectores
+  const chipsDiv = document.getElementById('detSectorChips');
+
+  // Chip "Todos"
+  const allBtn = document.createElement('div');
+  allBtn.className = 'chip active';
+  allBtn.textContent = 'Todos';
+  allBtn.style.cssText = 'font-weight:600;background:#0d0d0d;color:#fff;border-color:#0d0d0d';
+  allBtn.onclick = () => {
+    chipsDiv.querySelectorAll('.chip[data-sec]').forEach(c => {
+      c.classList.add('active');
+      c.style.background = c.dataset.col || '';
+      c.style.color = c.dataset.col ? '#fff' : '';
+    });
+    refreshDetail();
+  };
+  chipsDiv.appendChild(allBtn);
+
+  Object.keys(DETAIL).forEach(s => {
+    const chip = document.createElement('div');
+    // Buscar color: por nombre directo en COLORS, o por mapeo API_SECTOR_MAP
+    const mappedName = API_SECTOR_MAP[s] || s;
+    const col = COLORS[mappedName] || COLORS[s] || null;
+    chip.className = 'chip active';
+    chip.dataset.sec = s;
+    chip.dataset.col = col || '';
+    chip.textContent = s;
+    if (col) { chip.style.background = col; chip.style.color = '#fff'; chip.style.borderColor = col; }
+    chip.onclick = () => {
+      chip.classList.toggle('active');
+      if (chip.classList.contains('active')) {
+        if (col) { chip.style.background = col; chip.style.color = '#fff'; }
+      } else {
+        chip.style.background = ''; chip.style.color = '';
+      }
+      refreshDetail();
+    };
+    chipsDiv.appendChild(chip);
+  });
+  // Rubro picker — unión de todos los rubros existentes
+  const allRubros = new Set();
+  Object.values(DETAIL).forEach(d => Object.keys(d).forEach(r => allRubros.add(r)));
+  const sortedRubros = Array.from(allRubros).sort();
+  const selRubro = document.getElementById('detRubroCompare');
+  sortedRubros.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r; o.textContent = r;
+    selRubro.appendChild(o);
+  });
+  // Default rubro: SUELDOS
+  if (sortedRubros.includes('SUELDOS')) selRubro.value = 'SUELDOS';
+
+  ['detDesde','detHasta'].forEach(id => {
+    document.getElementById(id).addEventListener('change', refreshDetail);
+  });
+  document.getElementById('detRubroCompare').addEventListener('change', renderRubroBySector);
+
+  // Inicializar rango limitado a los meses con datos
+  if (DETAIL_MONTHS.length) {
+    const minM = DETAIL_MONTHS[0];
+    const maxM = DETAIL_MONTHS[DETAIL_MONTHS.length - 1];
+    ['detDesde','detHasta'].forEach(id => {
+      const [yd,md] = minM.split('-').map(Number);
+      const [yh,mh] = maxM.split('-').map(Number);
+      const lastDay = new Date(yh, mh, 0).getDate();
+      const minDate = minM + '-01';
+      const maxDate = maxM + '-' + String(lastDay).padStart(2,'0');
+      document.getElementById(id).min = minDate;
+      document.getElementById(id).max = maxDate;
+    });
+    document.getElementById('detDesde').value = minM + '-01';
+    document.getElementById('detHasta').value = maxM + '-' + String(new Date(parseInt(maxM.split('-')[0]), parseInt(maxM.split('-')[1]), 0).getDate()).padStart(2,'0');
+  }
+  refreshDetail();
+}
+
+// ===== Page navigation =====
+document.querySelectorAll('.page-nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.page-nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.dataset.page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page' + (target === 'proj' ? 'Proj' : 'Detail')).classList.add('active');
+    // Re-render charts cuando volvés a la pestaña porque pueden tener tamaños raros
+    if (target === 'proj' && currentProj) {
+      renderChartCostTn(currentProj);
+      renderChartGasto(currentProj);
+    } else if (target === 'detail') {
+      refreshDetail();
+    }
+  });
+});
+
+function computeSeasonality() {
+  const seas = {};
+  SECTORS.forEach(sec => {
+    const gastos = (RAW.data[sec] || {}).gasto || [];
+    const points = [];
+    for (let i = 0; i < RAW.nRealGasto; i++) {
+      const v = gastos[i];
+      if (v !== null && v > 0) points.push({ m: parseInt(RAW.months[i].split('-')[1]), v });
+    }
+    if (points.length < 12) { seas[sec] = {}; return; }
+    const overall = points.reduce((s, x) => s + x.v, 0) / points.length;
+    const byMonth = {};
+    for (let m = 1; m <= 12; m++) {
+      const mv = points.filter(x => x.m === m).map(x => x.v);
+      byMonth[m] = mv.length > 0 ? (mv.reduce((a, b) => a + b, 0) / mv.length) / overall : 1.0;
+    }
+    seas[sec] = byMonth;
+  });
+  return seas;
+}
+async function loadFromAPI() {
+  const chip = document.getElementById('updateChip');
+  try {
+    const data = await fetch('/api/fabriles').then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+
+    // Build SQL data arrays
+    const sqlMonths = (data.meses || []).map(m => mesToYM(m));
+    const sqlData = {};
+    const allGroups = [...(data.VA||[]), ...(data.INF||[]), ...(data.ADM||[])];
+    allGroups.forEach(g => {
+      const sn = API_SECTOR_MAP[g.g];
+      if (!sn) return;
+      const gastoRow = g.rows.find(r => r.l === 'Gasto ($)');
+      const volRow   = g.rows.find(r => r.l === 'Volumen (tn)');
+      sqlData[sn] = {
+        gasto:   gastoRow ? gastoRow.v.map(v => v !== null ? Math.abs(v) : null) : sqlMonths.map(() => null),
+        volumen: volRow   ? volRow.v : sqlMonths.map(() => null),
+      };
+    });
+
+    // Merge: historial (Ene-23 a Sep-25) + SQL (Oct-25 en adelante)
+    RAW.months = [...HIST_DATA.months, ...sqlMonths];
+    RAW.nRealGasto = RAW.months.length;
+    RAW.lastClosedMonth = data.lastClosedMonth || '';
+    SECTORS.forEach(sec => {
+      const h = HIST_DATA.data[sec] || { gasto: HIST_DATA.months.map(() => null), volumen: HIST_DATA.months.map(() => null) };
+      const s = sqlData[sec]         || { gasto: sqlMonths.map(() => null),        volumen: sqlMonths.map(() => null) };
+      RAW.data[sec] = { gasto: [...h.gasto, ...s.gasto], volumen: [...h.volumen, ...s.volumen] };
+    });
+
+    // DETAIL solo cubre meses SQL
+    DETAIL_MONTHS = sqlMonths;
+    if (data.DETAIL) {
+      Object.entries(data.DETAIL).forEach(([dim, rubros]) => { DETAIL[dim] = rubros; });
+    }
+
+    // Compute seasonality from real data
+    RAW.seasonality = computeSeasonality();
+
+    // Auto-calcular inflación mensual real desde todo el historial (solo meses cerrados)
+    (() => {
+      const lastClosedIdx = RAW.lastClosedMonth
+        ? RAW.months.indexOf(RAW.lastClosedMonth)
+        : RAW.nRealGasto - 2;
+      const cutoff = lastClosedIdx >= 0 ? lastClosedIdx : RAW.nRealGasto - 2;
+      const pts = RAW.months
+        .map((m, i) => ({ m, i }))
+        .filter(x => x.i <= cutoff)
+        .map(({ i }) => {
+          let g = 0;
+          SECTORS.forEach(sec => { g += (RAW.data[sec]?.gasto[i] || 0); });
+          return g > 0 ? g : null;
+        })
+        .filter(v => v !== null);
+
+      if (pts.length >= 2) {
+        const rate = (Math.pow(pts[pts.length - 1] / pts[0], 1 / (pts.length - 1)) - 1) * 100;
+        const pct  = Math.max(0, rate).toFixed(1);
+        window._autoInflacion = pct;
+        document.getElementById('infGastos').value = pct;
+        const help = document.getElementById('infGastosHelp');
+        if (help) help.textContent = 'Tasa histórica calculada: ' + pct + '% mensual  ·  editá para simular';
+        const btn = document.getElementById('infGastosReset');
+        if (btn) btn.onclick = () => { document.getElementById('infGastos').value = window._autoInflacion; refresh(); };
+      }
+    })();
+
+    // Update projection selector: default = +1 mes
+    const _baseM   = RAW.lastClosedMonth || RAW.months[RAW.months.length - 1] || '';
+    const _lastDataM = RAW.months[RAW.months.length - 1] || _baseM;
+    if (_lastDataM) {
+      const [_ly, _lm] = _lastDataM.split('-').map(Number); // desde último mes real
+      const [_bly, _blm] = (_baseM || _lastDataM).split('-').map(Number); // para etiqueta
+      const _MES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const _toEOY = 12 - _lm; // meses restantes del año desde el último dato
+      const _sel = document.getElementById('projMonths');
+      _sel.innerHTML =
+        '<option value="0">Sin proyección (solo datos reales)</option>' +
+        '<option value="1" selected>+1 mes (próximo mes)</option>' +
+        (_toEOY > 1 ? `<option value="${_toEOY}">Hasta Dic-${_ly} (+${_toEOY} meses)</option>` : '') +
+        '<option value="12">+12 meses</option>' +
+        '<option value="24">+24 meses</option>';
+      const _ctrl = _sel.closest('.control');
+      if (_ctrl) {
+        _ctrl.querySelector('label').textContent = 'Proyección';
+        _ctrl.querySelector('.control-help').textContent =
+          'Último dato real: ' + _MES[_blm - 1] + '-' + _bly;
+      }
+    }
+
+    // Update STD_COSTS from API COS if available
+    if (data.COS) {
+      data.COS.forEach(c => {
+        const sn = API_SECTOR_MAP[c.n];
+        if (sn && (c.std || c.anual)) STD_COSTS[sn] = Math.abs(c.std || c.anual);
+      });
+    }
+
+    chip.textContent = '● Actualizado a ' + (data.actualizadoA || RAW.months[RAW.months.length-1] || '');
+    chip.className = 'update-chip online';
+  } catch(e) {
+    chip.textContent = '○ Sin conexión a SQL — no hay datos disponibles';
+    chip.className = 'update-chip offline';
+    console.error('loadFromAPI error:', e);
+  }
+  loadState();
+  refresh();
+  initDetailPage();
+}
+loadFromAPI();
+</script>
+
+</body>
+</html>
