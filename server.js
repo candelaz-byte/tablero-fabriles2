@@ -1,11 +1,11 @@
-'use strict';
+﻿'use strict';
 
 const express = require('express');
 const sql     = require('mssql');
 const fs      = require('fs');
 const path    = require('path');
 
-// ─── Password ─────────────────────────────────────────────────────────────────
+// ─── Password SQL ─────────────────────────────────────────────────────────────
 const SQL_PASS = process.env.SQL_PASS ||
   fs.readFileSync(path.join(__dirname, 'SQL_PASS.txt'), 'utf8').trim();
 
@@ -59,10 +59,11 @@ function mesLabel(yyyymm) {
   const [y, m] = yyyymm.split('-');
   return `${MES_ES[parseInt(m, 10)]}-${y.slice(2)}`;
 }
-function monthsFromNov2025() {
+function monthsFrom(startYM) {
   const out = [];
+  const [sy, sm] = startYM.split('-').map(Number);
   const now = new Date();
-  let y = 2025, m = 11;
+  let y = sy, m = sm;
   while (y < now.getFullYear() || (y === now.getFullYear() && m <= now.getMonth() + 1)) {
     out.push(`${y}-${String(m).padStart(2, '0')}`);
     m++; if (m > 12) { m = 1; y++; }
@@ -107,7 +108,12 @@ app.get('/api/fabriles', async (req, res) => {
   try {
     const p = await getPool();
 
-    const mesesKeys = monthsFromNov2025();
+    // Determinar el primer mes con datos reales en DHControlPresup
+    const firstMonthRow = (await p.request().query(
+      `SELECT MIN(Anomes) AS firstMes FROM DHControlPresup WHERE Anomes IS NOT NULL AND LEN(RTRIM(Anomes))=7`
+    )).recordset[0];
+    const firstMes  = (firstMonthRow?.firstMes || '2025-01').trim();
+    const mesesKeys = monthsFrom(firstMes);
     const anio      = new Date().getFullYear().toString();
     const acumKeys  = mesesKeys.filter(m => m.startsWith(anio));
     const meses     = mesesKeys.map(mesLabel);
@@ -171,6 +177,22 @@ app.get('/api/fabriles', async (req, res) => {
           WHEN Transaccionsubtiponombre LIKE '%EXTRUSADO%'                                THEN 'EXT_SNACKS'
         END
     `)).recordset;
+
+    // ── 3. Rubros por sector (DHControlPresup con Cuenta) ─────────────────────
+    const rubrosRows = (await p.request().query(`
+      SELECT RTRIM(Dimensionvalor) AS dim, RTRIM(Cuenta) AS cuenta,
+             Anomes AS mes, SUM(Importemonprincipalreal) AS gasto
+      FROM DHControlPresup
+      WHERE Anomes IN (${ML})
+      GROUP BY RTRIM(Dimensionvalor), RTRIM(Cuenta), Anomes
+    `)).recordset;
+
+    const rubrosIdx = {};
+    for (const r of rubrosRows) {
+      if (!rubrosIdx[r.dim]) rubrosIdx[r.dim] = {};
+      if (!rubrosIdx[r.dim][r.cuenta]) rubrosIdx[r.dim][r.cuenta] = {};
+      rubrosIdx[r.dim][r.cuenta][r.mes] = +r.gasto;
+    }
 
     // ── Índices en memoria ────────────────────────────────────────────────────
     const volIdx = { 'MOLINO_CASC': {} };
@@ -316,6 +338,19 @@ app.get('/api/fabriles', async (req, res) => {
     ];
     const COS = COS_ORDER.map(k => cosMap[k]).filter(Boolean);
 
+    // ── DETAIL: rubros por sector ─────────────────────────────────────────────
+    const DETAIL = {};
+    for (const dim of Object.keys(RUBRO_CFG)) {
+      const cuentas = rubrosIdx[dim] || {};
+      DETAIL[dim] = {};
+      Object.keys(cuentas).forEach(cuenta => {
+        DETAIL[dim][cuenta] = mesesKeys.map(m => {
+          const v = cuentas[cuenta]?.[m];
+          return v != null ? Math.abs(v) : 0;
+        });
+      });
+    }
+
     // Gasto total acumulado
     const gastoTotal = Object.values(gastoIdx)
       .flatMap(md => acumKeys.map(m => md[m] || 0))
@@ -331,6 +366,8 @@ app.get('/api/fabriles', async (req, res) => {
       cosTrimLabel,
       cosAnualLabel,
       gastoTotal,
+      DETAIL,
+      lastClosedMonth: ultimoClosedKey,
       actualizadoA: (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); })(),
     });
 
