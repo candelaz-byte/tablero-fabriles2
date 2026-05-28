@@ -7,7 +7,10 @@ const path    = require('path');
 
 // ─── Password SQL ─────────────────────────────────────────────────────────────
 const SQL_PASS = process.env.SQL_PASS ||
-  fs.readFileSync(path.join(__dirname, 'SQL_PASS.txt'), 'utf8').trim();
+  (() => { try { return fs.readFileSync(path.join(__dirname, 'SQL_PASS.txt'), 'utf8').trim(); } catch { return 'DHsql1234'; } })();
+
+// ─── Password Dashboard ───────────────────────────────────────────────────────
+const DASHBOARD_PASS = process.env.DASHBOARD_PASS || 'dh2026';
 
 // ─── Conexión ─────────────────────────────────────────────────────────────────
 const sqlConfig = {
