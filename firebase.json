@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "target": "fabriles",
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/api/**", "function": "apiFabriles" }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  }
+}

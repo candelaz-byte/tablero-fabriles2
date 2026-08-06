@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "tablero-envasadora"
+  },
+  "targets": {
+    "tablero-envasadora": {
+      "hosting": {
+        "fabriles": ["fabriles-dh"]
+      }
+    }
+  }
+}

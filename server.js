@@ -175,6 +175,7 @@ app.get('/api/fabriles', async (req, res) => {
         AND Transaccionsubtiponombre NOT LIKE '%MOLINO%'
         AND Transaccionsubtiponombre NOT LIKE '%PICKING%'
         AND Transaccionsubtiponombre NOT LIKE '%LULEMU%'
+        AND Producto NOT LIKE '%DESCARTE%'
       GROUP BY Mesfecha,
         CASE
           WHEN Transaccionsubtiponombre LIKE '%ENVASADO%'                                 THEN 'ENVASADO'

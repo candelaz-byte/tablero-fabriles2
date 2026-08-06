@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Costos Fabriles 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#ffffff;color:#1a1a1a;padding:24px}
+
+.header{padding:0 0 1rem}
+.header-top{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.header h1{font-size:20px;font-weight:500}
+.updated{font-size:11px;color:#888;background:#f2f2f2;padding:3px 10px;border-radius:20px}
+.header-sub{font-size:12px;color:#888}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:1.5rem}
+.kpi{background:#f5f5f5;border-radius:8px;padding:12px 14px}
+.kpi-label{font-size:11px;color:#888;margin-bottom:5px;line-height:1.3}
+.kpi-val{font-size:20px;font-weight:500;line-height:1}
+.kpi-sub{font-size:10px;color:#888;margin-top:4px}
+.kpi-val.neg{color:#A32D2D}
+.kpi-val.pos{color:#3B6D11}
+
+.nav{display:flex;gap:0;border-bottom:1px solid #e5e5e5;margin-bottom:1.25rem}
+.nav-btn{padding:8px 16px;font-size:12px;font-weight:500;border:none;background:transparent;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:Arial,sans-serif;transition:color .15s}
+.nav-btn.on{color:#1a1a1a;border-bottom-color:#1a1a1a}
+.panel{display:none}.panel.on{display:block}
+
+.tw{overflow-x:auto;border:0.5px solid #e5e5e5;border-radius:12px;margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;min-width:680px}
+
+thead tr{border-bottom:1px solid #e5e5e5}
+th{padding:9px 12px;font-size:10px;font-weight:500;color:#888;text-align:right;white-space:nowrap;background:#f9f9f9}
+th:first-child{text-align:left;border-radius:12px 0 0 0}
+th:last-child{border-radius:0 12px 0 0}
+th.hl{background:#E6F1FB;color:#0C447C}
+th.yr26{background:#EBF3FF;color:#185FA5;font-weight:700;border-top:3px solid #185FA5}
+td.yr26{background:#F5F9FF}
+td.yr26.neg{background:#F5F9FF;color:#A32D2D}
+td.yr26.pos{background:#F5F9FF;color:#3B6D11}
+tr.total-row td.yr26{background:#dceeff}
+tr.group-hdr td.yr26{background:#EBF3FF}
+
+tr.group-hdr td{background:#f5f5f5;border-top:1px solid #e5e5e5;padding:6px 12px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888}
+tr.group-hdr td:first-child{color:#1a1a1a;font-size:11px}
+
+td{padding:6px 12px;font-size:11px;text-align:right;border-bottom:0.5px solid #e5e5e5;color:#1a1a1a;white-space:nowrap}
+td:first-child{text-align:left}
+tr:last-child td{border-bottom:none}
+
+td.neg{color:#A32D2D}
+td.pos{color:#3B6D11}
+td.hl{background:#E6F1FB;color:#0C447C;font-weight:500}
+td.hl.neg{background:#FCEBEB;color:#A32D2D;font-weight:500}
+td.hl.pos{background:#EAF3DE;color:#3B6D11;font-weight:500}
+td.row-label{font-weight:400;color:#888;text-align:left;padding-left:20px}
+td.row-label.indent{padding-left:12px}
+td.std-val{color:#185FA5;font-weight:500}
+tr.total-row td{background:#f5f5f5;font-weight:500;border-top:1px solid #e5e5e5}
+tr.total-row td.row-label{color:#1a1a1a;padding-left:12px}
+
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+.pill.neg{background:#FCEBEB;color:#A32D2D}
+.pill.pos{background:#EAF3DE;color:#3B6D11}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>Costos fabriles 2026</h1>
+    <span class="updated" id="chip-updated">Cargando...</span>
+  </div>
+  <div class="header-sub">Villa Adela · Inflados · Administración — Volumen · Gasto · $/tn</div>
+</div>
+
+<div class="kpis" id="kpis-container">
+  <div class="kpi"><div class="kpi-label">Gasto total acumulado</div><div class="kpi-val neg" id="kpi-gasto">—</div><div class="kpi-sub">Villa Adela + Inflados + Admin</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi1-lbl">$/tn —</div><div class="kpi-val neg" id="kpi1-val">—</div><div id="kpi1-sub" class="kpi-sub">—</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi2-lbl">$/tn —</div><div class="kpi-val neg" id="kpi2-val">—</div><div id="kpi2-sub" class="kpi-sub">—</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi3-lbl">$/tn —</div><div class="kpi-val neg" id="kpi3-val">—</div><div id="kpi3-sub" class="kpi-sub">—</div></div>
+  <div class="kpi"><div class="kpi-label" id="kpi4-lbl">$/tn —</div><div class="kpi-val neg" id="kpi4-val">—</div><div id="kpi4-sub" class="kpi-sub">—</div></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn on" onclick="sp('va',this)">Villa Adela</button>
+  <button class="nav-btn" onclick="sp('inf',this)">Inflados</button>
+  <button class="nav-btn" onclick="sp('adm',this)">Administración</button>
+  <button class="nav-btn" onclick="sp('cos',this)">$/tn por Sector</button>
+</div>
+
+<div id="pva" class="panel on"><div class="tw"><table id="tva"></table></div></div>
+<div id="pinf" class="panel"><div class="tw"><table id="tinf"></table></div></div>
+<div id="padm" class="panel"><div class="tw"><table id="tadm"></table></div></div>
+<div id="pcos" class="panel"><div class="tw"><table id="tcos"></table></div></div>
+
+<script>
+// M se setea desde la API
+let M = [];
+
+// ─── Datos de respaldo (hardcoded) ────────────────────────────────────────────
+const M_FB = ['Nov-25','Dic-25','Ene-26','Feb-26','Mar-26'];
+
+const VA_FB = [
+  { g:'Molienda', rows:[
+    { l:'Volumen (tn)', v:[5884.4,5117.9,6210.0,4801.9,6657.1], a:17668.986, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-175875530,-180427132,-144834344,-131426035,-146294260], a:-422554639, fmt:'gas' },
+    { l:'$/tn',        v:[-29889,-35254,-23323,-27370,-21976], a:-23915, fmt:'ptn' },
+  ]},
+  { g:'Elaborado', rows:[
+    { l:'Volumen (tn)', v:[2829.4,2727.3,2544.7,2291.0,3484.3], a:8320.035, fmt:'vol' },
+    { l:'Gasto ($)',    v:[83509080,-121305905,-96795337,-82041252,-95564592], a:-274401182, fmt:'gas' },
+    { l:'$/tn',        v:[29515,-44478,-38037,-35811,-27427], a:-32981, fmt:'ptn' },
+  ]},
+  { g:'Parboil', rows:[
+    { l:'Volumen (tn)', v:[1243.3,1698.2,1619.9,1749.8,2124.5], a:5494.23, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-72127305,-75433493,-66891127,-62735528,-66468071], a:-196094726, fmt:'gas' },
+    { l:'$/tn',        v:[-58011,-44418,-41293,-35854,-31286], a:-35691, fmt:'ptn' },
+  ]},
+  { g:'Harina', rows:[
+    { l:'Volumen (tn)', v:[90.6,131.8,158.1,117.6,138.1], a:413.746, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-9873085,-13582659,-12807364,-9483064,-11469147], a:-33759575, fmt:'gas' },
+    { l:'$/tn',        v:[-108946,-103068,-81013,-80672,-83047], a:-81595, fmt:'ptn' },
+  ]},
+  { g:'Depósito', rows:[
+    { l:'Volumen (tn)', v:[5884.4,5117.9,6210.0,4801.9,6657.1], a:17668.986, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-21651478,-38847149,-23744102,-21153794,-33010783], a:-77908679, fmt:'gas' },
+    { l:'$/tn',        v:[-3679,-7590,-3824,-4405,-4959], a:-4409, fmt:'ptn' },
+  ]},
+  { g:'Total Villa Adela', tot:true, rows:[
+    { l:'Volumen (tn)', v:[15932.0,14793.1,16742.7,13762.0,19061.2], a:null, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-196018318,-429596338,-345072274,-306839673,-352806853], a:null, fmt:'gas' },
+    { l:'$/tn',        v:[-62064,-131741,-106477,-103439,-85647], a:null, fmt:'ptn' },
+  ]},
+];
+
+const INF_FB = [
+  { g:'SLIM', rows:[
+    { l:'Volumen (tn)', v:[49.3,49.7,51.3,48.7,56.8], a:156.814, fmt:'vol' },
+    { l:'Gasto ($)',    v:[58893978,-89739631,-59638352,-58413661,-54683802], a:-172735815, fmt:'gas' },
+    { l:'$/tn',        v:[1194943,-1806462,-1162065,-1199410,-962896], a:-1101533, fmt:'ptn' },
+  ]},
+  { g:'Snacks', rows:[
+    { l:'Volumen (tn)', v:[77.3,64.1,64.0,69.7,76.7], a:210.365, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-47749796,-64552848,-60262355,-56098329,-60097246], a:-176457930, fmt:'gas' },
+    { l:'$/tn',        v:[-617393,-1007583,-941379,-805282,-783669], a:-838818, fmt:'ptn' },
+  ]},
+  { g:'Tostaditas', rows:[
+    { l:'Volumen (tn)', v:[32.0,29.8,16.7,13.7,27.3], a:57.722, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-40693315,-56851305,-42199149,-45649435,-52574836], a:-140423420, fmt:'gas' },
+    { l:'$/tn',        v:[-1271110,-1905524,-2527046,-3335240,-1923282], a:-2432754, fmt:'ptn' },
+  ]},
+  { g:'Tostadas', rows:[
+    { l:'Volumen (tn)', v:[null,null,35.9,16.1,4.2], a:56.117, fmt:'vol' },
+    { l:'Gasto ($)',    v:[null,null,-105076320,-38212200,-11638800], a:-154927320, fmt:'gas' },
+    { l:'$/tn',        v:[null,null,-2930018,-2378599,-2777757], a:-2760791, fmt:'ptn' },
+  ]},
+  { g:'Total Inflados', tot:true, rows:[
+    { l:'Volumen (tn)', v:[158.6,143.6,167.9,148.1,165.0], a:null, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-29549133,-211143784,-267176177,-198373624,-178994684], a:null, fmt:'gas' },
+    { l:'$/tn',        v:[-693560,-4719570,-7560509,-7718531,-6447603], a:null, fmt:'ptn' },
+  ]},
+];
+
+const ADM_FB = [
+  { g:'Administración', rows:[
+    { l:'Volumen (tn)', v:[5884.4,5117.9,6210.0,4801.9,6657.1], a:17668.986, fmt:'vol' },
+    { l:'Gasto ($)',    v:[-112200411,-131654147,-95645083,-100449180,-96768784], a:-292863046, fmt:'gas' },
+    { l:'$/tn',        v:[-19068,-25724,-15402,-20919,-14536], a:-16575, fmt:'ptn' },
+  ]},
+];
+
+const COS_FB = [
+  { n:'Molienda',       ult:21976,  trim:24223,  anual:23915  },
+  { n:'Depósito',       ult:4959,   trim:4396,   anual:4409   },
+  { n:'Elaborado',      ult:27427,  trim:33758,  anual:32981  },
+  { n:'Parboil',        ult:31286,  trim:36144,  anual:35691  },
+  { n:'Harina',         ult:83047,  trim:81577,  anual:81595  },
+  { n:'SLIM',           ult:962896, trim:1108124,anual:1101533 },
+  { n:'Snacks',         ult:783669, trim:843443, anual:838818  },
+  { n:'Tostaditas',     ult:1923282,trim:2595190,anual:2432754 },
+  { n:'Administración', ult:14536,  trim:16952,  anual:16575  },
+];
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
+function fV(v){ if(v===null||v===undefined) return '<span style="color:#aaa">—</span>'; return v.toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function fG(v){ if(v===null||v===undefined) return '<span style="color:#aaa">—</span>'; return (v/1e6).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})+'M'; }
+function fP(v){ if(v===null||v===undefined) return '<span style="color:#aaa">—</span>'; return '$'+Math.round(v).toLocaleString('es-AR'); }
+function fPct(v){ if(v===null) return '—'; const c=v<0?'pos':'neg'; return `<span class="pill ${c}">${v>0?'+':''}${(v*100).toFixed(1)}%</span>`; }
+function fmt(v,f){ return f==='vol'?fV(v):f==='gas'?fG(v):fP(v); }
+function nc(v,f){ if(v===null||v===undefined) return ''; return (f==='ptn'||f==='gas')?(v<0?'neg':'pos'):''; }
+function acumHl(v,f){ return 'hl'+((v!==null&&v!==undefined)?(v<0?' neg':' pos'):''); }
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function buildTable(tid, data){
+  const t = document.getElementById(tid);
+  let h = `<thead><tr><th>Sector</th><th>Indicador</th>`;
+  M.forEach(m=>{ h+=`<th class="${m.endsWith('-26')?'yr26':''}">${m}</th>`; });
+  h += `<th class="hl">Acumulado</th></tr></thead><tbody>`;
+  data.forEach(sec=>{
+    h += `<tr class="group-hdr"><td>${sec.g}</td><td colspan="${M.length+1}"></td></tr>`;
+    sec.rows.forEach(row=>{
+      h += `<tr class="${sec.tot?'total-row':''}">`;
+      h += `<td></td><td class="row-label${sec.tot?' indent':''}">${row.l}</td>`;
+      row.v.forEach((v,i)=>{
+        const y26 = M[i]&&M[i].endsWith('-26') ? ' yr26' : '';
+        h+=`<td class="${nc(v,row.fmt)}${y26}">${fmt(v,row.fmt)}</td>`;
+      });
+      h += `<td class="${acumHl(row.a,row.fmt)}">${row.a!==null?fmt(row.a,row.fmt):'—'}</td></tr>`;
+      if(row.fmt==='ptn' && !sec.tot){
+        h += `<tr class="${sec.tot?'total-row':''}">`;
+        h += `<td></td><td class="row-label${sec.tot?' indent':''}" style="color:#888;font-style:italic">USD/tn</td>`;
+        row.v.forEach((v,i)=>{
+          const y26 = M[i]&&M[i].endsWith('-26') ? ' yr26' : '';
+          const usd = v!=null ? Math.round(v/TC) : null;
+          h+=`<td class="${nc(v,'ptn')}${y26}" style="font-style:italic">${usd!=null?'USD'+Math.abs(usd).toLocaleString('es-AR'):'<span style="color:#aaa">—</span>'}</td>`;
+        });
+        const ua = row.a!=null ? Math.round(row.a/TC) : null;
+        h += `<td class="${acumHl(row.a,'ptn')}" style="font-style:italic">${ua!=null?'USD'+Math.abs(ua).toLocaleString('es-AR'):'—'}</td></tr>`;
+      }
+    });
+  });
+  t.innerHTML = h + '</tbody>';
+}
+
+const TC = 1450;
+function fUSD(v){ if(!v) return '—'; return 'USD'+Math.round(v/TC).toLocaleString('es-AR'); }
+
+function fVar(real, std){
+  if(!real||!std) return '—';
+  const pct = (real - std) / std * 100;
+  const cls = pct < 0 ? 'pos' : 'neg';
+  return `<span class="pill ${cls}">${pct>0?'+':''}${pct.toFixed(1)}%</span>`;
+}
+
+function buildCos(cosData, ultLabel, trimLabel, anualLabel){
+  ultLabel   = ultLabel   || 'últ. mes';
+  trimLabel  = trimLabel  || 'trimestre';
+  anualLabel = anualLabel || 'acumulado';
+  const t = document.getElementById('tcos');
+  const sub = s => `<br><span style="font-weight:400;font-size:0.95em;color:#888;white-space:nowrap">${s}</span>`;
+  let h = `<thead><tr>
+    <th>Sector</th>
+    <th>$/tn${sub(ultLabel)}</th><th>USD/tn${sub(ultLabel)}</th>
+    <th>$/tn${sub(trimLabel)}</th><th>USD/tn${sub(trimLabel)}</th>
+    <th class="hl">$/tn${sub(anualLabel)}</th><th class="hl">USD/tn${sub(anualLabel)}</th>
+    <th>Costo std</th>
+    <th>vs std${sub(ultLabel)}</th><th>vs std${sub(trimLabel)}</th><th class="hl">vs std${sub(anualLabel)}</th>
+  </tr></thead><tbody>`;
+  cosData.forEach((c,i)=>{
+    const isComb = !!c.combined;
+    const fw = isComb ? 'font-weight:600;' : '';
+    const bg = isComb ? 'background:#f0f4fa;' : (i%2===0?'background:#f9f9f9;':'');
+    h += `<tr style="${bg}${fw}">`;
+    h += `<td class="row-label indent">${c.n}</td>`;
+    h += `<td class="neg">${c.ult?'$'+Math.round(c.ult).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td class="neg">${fUSD(c.ult)}</td>`;
+    h += `<td class="neg">${c.trim?'$'+Math.round(c.trim).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td class="neg">${fUSD(c.trim)}</td>`;
+    h += `<td class="hl neg">${c.anual?'$'+Math.round(c.anual).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td class="hl neg">${fUSD(c.anual)}</td>`;
+    h += `<td class="std-val">${c.std?'$'+Math.round(c.std).toLocaleString('es-AR'):'—'}</td>`;
+    h += `<td>${fVar(c.ult,c.std)}</td>`;
+    h += `<td>${fVar(c.trim,c.std)}</td>`;
+    h += `<td class="hl">${fVar(c.anual,c.std)}</td>`;
+    h += `</tr>`;
+  });
+  t.innerHTML = h + '</tbody>';
+}
+
+function sp(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+// ─── KPIs dinámicos ───────────────────────────────────────────────────────────
+function updateKPIs(data) {
+  // Gasto total
+  const gt = data.gastoTotal;
+  document.getElementById('kpi-gasto').textContent =
+    (gt < 0 ? '-' : '') + '$' + (Math.abs(gt)/1e6).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0}) + 'M';
+
+  // Top 4 rubros del COS ordenados por impacto (mayor gasto anual absoluto)
+  const sorted = [...data.COS].sort((a,b) => (b.anual||0) - (a.anual||0));
+  const top4   = sorted.slice(0, 4);
+  const ult    = data.cosUltLabel || data.meses[data.meses.length - 1] || '';
+
+  top4.forEach((c, i) => {
+    const n = i + 1;
+    document.getElementById(`kpi${n}-lbl`).textContent = `$/tn ${c.n} — ${ult}`;
+    document.getElementById(`kpi${n}-val`).textContent = c.ult ? `-$${Math.round(c.ult).toLocaleString('es-AR')}` : '—';
+    document.getElementById(`kpi${n}-sub`).textContent = c.anual ? `acum $${Math.round(c.anual).toLocaleString('es-AR')}/tn` : '';
+  });
+}
+
+// ─── Datos embebidos (snapshot 27/05/2026) ───────────────────────────────────
+function loadData() {
+  const data = {"meses":["Oct-25","Nov-25","Dic-25","Ene-26","Feb-26","Mar-26","Abr-26","May-26"],"VA":[{"g":"Molienda","rows":[{"l":"Volumen (tn)","v":[6161.35,5884.359,5117.871,6199.862,4801.875,6657.13369,6452.652,5630.966],"a":29742.5,"fmt":"vol"},{"l":"Gasto ($)","v":[-146926772.61,-175960754.48,-189137197.06,-144834344.09,-131426034.84,-146294260.23,-134151438.42,-45374011.34],"a":-602080088.92,"fmt":"gas"},{"l":"$/tn","v":[-23847,-29903,-36956,-23361,-27370,-21976,-20790,-8058],"a":-20243,"fmt":"ptn"}]},{"g":"Elaborado","rows":[{"l":"Volumen (tn)","v":[2874.91,2829.351,2727.415,2547.27,2290.965,3484.33,3228.14,3056.765],"a":14607.5,"fmt":"vol"},{"l":"Gasto ($)","v":[-80777149.59,-83565895.87,-122016833.11,-96795337.17,-82041252.39,-95564591.96,-112903133.94,-12823385.89],"a":-400127701.34999996,"fmt":"gas"},{"l":"$/tn","v":[-28097,-29535,-44737,-38000,-35811,-27427,-34975,-4195],"a":-27392,"fmt":"ptn"}]},{"g":"Parboil","rows":[{"l":"Volumen (tn)","v":[1851.237,1243.339,1698.245,1619.913,1749.774,2124.533,1861.794,1615.638],"a":8971.7,"fmt":"vol"},{"l":"Gasto ($)","v":[-73924823.94,-72174651.14,-76331833.07,-66981127.27,-62735528.01,-66468070.57,-97144209.77,-27272508.38],"a":-320601444,"fmt":"gas"},{"l":"$/tn","v":[-39933,-58049,-44947,-41349,-35854,-31286,-52178,-16880],"a":-35735,"fmt":"ptn"}]},{"g":"Harina","rows":[{"l":"Volumen (tn)","v":[74.161,90.624,131.834,158.619,117.551,139.535,176.249,127.146],"a":719.1,"fmt":"vol"},{"l":"Gasto ($)","v":[-9926789.6,-9873084.7,-13640433.5,-12807364.08,-9483063.98,-11469146.78,-11563480.62,-1246836.9],"a":-46569892.36,"fmt":"gas"},{"l":"$/tn","v":[-133855,-108946,-103467,-80743,-80672,-82195,-65609,-9806],"a":-64761,"fmt":"ptn"}]},{"g":"Depósito","rows":[{"l":"Volumen (tn)","v":[6161.35,5884.359,5117.871,6199.862,4801.875,6657.13369,6452.652,5630.966],"a":29742.5,"fmt":"vol"},{"l":"Gasto ($)","v":[-26607768.41,-21651478.42,-39631069.41,-23744101.62,-21153793.79,-34690783.21,-33472677.82,-8151522.14],"a":-121212878.58,"fmt":"gas"},{"l":"$/tn","v":[-4318,-3679,-7744,-3830,-4405,-5211,-5187,-1448],"a":-4075,"fmt":"ptn"}]},{"g":"Total Villa Adela","tot":true,"rows":[{"l":"Volumen (tn)","v":[17123.008,15932.032000000001,14793.236,16725.526,13762.039999999999,19062.66538,18171.487,16061.481],"a":83783.2,"fmt":"vol"},{"l":"Gasto ($)","v":[-338163304.15000004,-363225864.61,-440757366.15,-345162274.22999996,-306839673.01000005,-354486852.74999994,-389234940.57,-94868264.65],"a":-1490592005.21,"fmt":"gas"},{"l":"$/tn","v":[-230050,-230112,-237851,-187283,-184112,-168095,-178739,-40387],"a":-152206,"fmt":"ptn"}]}],"INF":[{"g":"SLIM","rows":[{"l":"Volumen (tn)","v":[53.9832,49.2864,49.6776,51.3216,48.702,56.7914,56.2202,51.8728],"a":264.9,"fmt":"vol"},{"l":"Gasto ($)","v":[-58140500.56,-58941325.05,-90818068.36,-59638352.32,-58413660.51,-54683801.73,-60471170.08,-18385473.54],"a":-251592458.17999998,"fmt":"gas"},{"l":"$/tn","v":[-1077011,-1195894,-1828149,-1162052,-1199410,-962889,-1075613,-354434],"a":-949735,"fmt":"ptn"}]},{"g":"Snacks","rows":[{"l":"Volumen (tn)","v":[77.25032,77.34184,64.06704,64.01576,69.66336,77.73552,86.841,73.76564],"a":372,"fmt":"vol"},{"l":"Gasto ($)","v":[-52448170.43,-47797142.84,-68323560.75,-60262355.21,-56098328.92,-60097245.55,-59441581.07,-16477315.67],"a":-252376826.42,"fmt":"gas"},{"l":"$/tn","v":[-678938,-617999,-1066439,-941367,-805277,-773099,-684488,-223374],"a":-678394,"fmt":"ptn"}]},{"g":"Tostaditas","rows":[{"l":"Volumen (tn)","v":[13.54872,32.01408,29.8356,16.6692,13.6872,27.366,25.0356,25.1304],"a":107.9,"fmt":"vol"},{"l":"Gasto ($)","v":[-42631993.13,-40740661.35,-57212359.98,-42199148.92,-45649434.84,-52574836.44,-55370213.07,-12893958.18],"a":-208687591.45,"fmt":"gas"},{"l":"$/tn","v":[-3146570,-1272586,-1917587,-2531564,-3335192,-1921174,-2211659,-513082],"a":-1934291,"fmt":"ptn"}]},{"g":"Tostadas","rows":[{"l":"Volumen (tn)","v":[null,null,14.50008,35.86212,16.065,4.19076,8.79228,16.75044],"a":81.7,"fmt":"vol"},{"l":"Gasto ($)","v":[null,null,-26107200,-105076320,-38212200,-11638800,-26591573,-40060800],"a":-221579693,"fmt":"gas"},{"l":"$/tn","v":[null,null,-1800487,-2930009,-2378599,-2777253,-3024423,-2391627],"a":-2713422,"fmt":"ptn"}]},{"g":"Total Inflados","tot":true,"rows":[{"l":"Volumen (tn)","v":[144.78224,158.64232,158.08032,167.86867999999998,148.11756,166.08368000000002,176.88907999999998,167.51928],"a":826.5,"fmt":"vol"},{"l":"Gasto ($)","v":[-153220664.12,-147479129.24,-242461189.09,-267176176.45,-198373624.27,-178994683.72,-201874537.22,-87817547.39],"a":-934236569.0500001,"fmt":"gas"},{"l":"$/tn","v":[-4902519,-3086479,-6612662,-7564992,-7718478,-6434415,-6996183,-3482517],"a":-6275842,"fmt":"ptn"}]}],"ADM":[{"g":"Administración","rows":[{"l":"Volumen (tn)","v":[6161.35,5884.359,5117.871,6199.862,4801.875,6657.13369,6452.652,5630.966],"a":29742.5,"fmt":"vol"},{"l":"Gasto ($)","v":[-108467316.47,-112247757.21,-132003200.02,-95645082.67,-100449179.86,-101246115.36,-110456322.59,-24766945.33],"a":-432563645.81,"fmt":"gas"},{"l":"$/tn","v":[-17604,-19076,-25793,-15427,-20919,-15209,-17118,-4398],"a":-14544,"fmt":"ptn"}]}],"COS":[{"n":"Molienda","ult":20790,"trim":22995,"anual":23089,"std":null},{"n":"Depósito","ult":5187,"trim":4987,"anual":4689,"std":null},{"n":"Molienda+Depósito","combined":true,"ult":25978,"trim":27981,"anual":27778,"std":29239},{"n":"Elaborado","ult":34975,"trim":32266,"anual":33531,"std":37153},{"n":"Parboil","ult":52178,"trim":39460,"anual":39876,"std":38468},{"n":"Harina","ult":65609,"trim":75036,"anual":76565,"std":80868},{"n":"SLIM","ult":1075613,"trim":1073309,"anual":1094688,"std":1177069},{"n":"Snacks","ult":684488,"trim":749817,"anual":790931,"std":868875},{"n":"Tostaditas","ult":2211659,"trim":2324062,"anual":2365857,"std":2883307},{"n":"Tostadas","ult":3024423,"trim":2631591,"anual":2796463,"std":null},{"n":"Administración","ult":17118,"trim":17427,"anual":16913,"std":24000}],"cosUltLabel":"Abr-26","cosTrimLabel":"Feb-26 a Abr-26","cosAnualLabel":"Ene-26 a Abr-26","gastoTotal":-3023728602.4500003,"DETAIL":{"MOLINO":{"ALQUILERES PAGADOS":[3262500,3000000,2950000,3662750,2940000,2839000,2971500,2992500],"AMORTIZACIONES":[0,0,8714059.94,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[103400,102125,873367.5,106700,104275,0,235541.13,523005.35],"CAPACITACION AL PERSONAL":[0,0,0,0,0,0,0,194667.55],"CARGAS SOCIALES":[15792897.75,14090476.35,21847109.58,15825766.25,14960922.65,14670804.34,15168402.58,53136.88],"CONSUMO DE ARTICULOS DE LIMPIEZA":[498239.03,227944.49,522858.39,365036.72,242995.84,20662.2,0,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[707074.53,585459.86,532686.01,690903.6,761966.24,696039.85,216733.23,33418.89],"CONSUMO DE INSUMOS VARIOS":[9890400,4693700,6779400,4429780,3889940,5138360,3383583,0],"CONSUMO DE MATERIAL DE EMPAQUE":[8786312,15725448,5797410,0,0,0,0,0],"CONTROL DE CALIDAD Y CALIBRACION":[970001.11,357260.17,902012.06,1984875.71,0,1212754.5,422115.03,0],"ENERGÍA ELECTRICA":[33295256.72,32978085.34,28081793.44,23510657.49,27848889.25,28059307.14,27525733.45,28329386.36],"FLETES Y ACARREOS":[495776.61,733899.07,697465.09,1217953.67,2311185.5,737785.34,1347100.95,711978.27],"FRANQUEOS Y ENCOMIENDAS":[0,0,0,0,0,11071.3,0,0],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,389518.5],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[156169.83,51652.8,97811.16,92271.82,115825.54,1087097.82,923162.65,95448.91],"GASTOS DE LIBRERÍA":[82665.2,0,182072.16,8500,97062.24,73272.24,117595.04,68535.11],"GASTOS DE REPRESENTACION":[0,240000,0,240000,0,266000,0,266000],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,148855.87,0,0,0,1920000.01,0,0],"GASTOS EVENTOS FIN DE AÑO":[3915500,1300967.37,212718.25,0,0,0,0,0],"GASTOS SELLADO Y OTROS":[0,2886875,33213.68,0,0,0,0,0],"GASTOS TELEFONÍA E INTERNET":[0,0,0,0,0,0,0,0],"HONORARIOS PROFESIONALES":[197496,197496,394992,0,227496,197496,197496,0],"IMPUESTOS Y TASAS":[0,0,0,0,0,0,0,0],"ITC - COSTO":[0,0,0,0,0,0,0,0],"OBSEQUIOS Y ATENCIONES (PUBLICIDAD Y DESCUENTOS)":[0,0,0,0,0,0,0,0],"OTROS INGRESOS/EGRESOS":[1995064.02,0,0,0,0,0,890517.61,0],"PATENTE Y SEGUROS":[161804.38,161804.38,673404.62,198059.32,198059.32,198059.32,198059.32,0],"PROVEEDURIA":[176300,198000,253319.82,265612.82,345934.31,142700,424251.85,74400],"REPARACION Y REPUESTOS BS USO":[14026522.43,40221780.61,20643732.6,23878376.28,9698554.19,21198830.01,16692249.54,7273370.79],"ROPA DE TRABAJO COSTO":[149033.12,218482.52,363066.03,1244272.55,3847629.56,2864994.4,1381302.88,0],"SEGURIDAD E HIGIENE PERSONAL":[20035.38,730181.27,450861.55,12112.78,0,170572,13056.11,0],"SERVICIO DE FUMIGACION":[133168.51,143171.51,286457.34,7745.18,143986.04,939583.99,150359.22,163246.67],"SERVICIOS DE VIGILANCIA":[2335782.36,2710156.71,2528407.8,3322894.74,3070832.94,2548076.8,2383577.6,2648416.31],"SERVICIOS TERCERIZADOS":[514349,0,485346.3,2305516.56,2286160.45,2343587.72,2423738.44,1221564.17],"SOFTWARE":[0,0,0,0,0,0,0,112572.31],"SUELDOS":[54279850.67,54256932.16,84671477.06,61438912.21,58243443.45,58923997.96,58866398.01,188760.29],"VIÁTICOS":[0,0,162154.68,25646.39,90876.32,34207.29,0,34084.98]},"ENVASADORA":{"ALQUILERES PAGADOS":[5029500,3882000,3835000,4535750,3780000,3685000,3835500,2992500],"AMORTIZACIONES":[0,0,713591.77,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[103400,102125,705360,106700,104275,0,230148.55,523005.35],"CAPACITACION AL PERSONAL":[0,0,0,0,0,0,0,194667.55],"CARGAS SOCIALES":[12512990.86,12390034.48,20510294.26,15241833.57,13356613.37,15271175.08,15243636.92,149494.32],"CONSUMO DE ARTICULOS DE LIMPIEZA":[498239.03,227944.47,516108.39,365036.71,242995.82,20662.2,0,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[895705.58,883952.83,866821.33,747203.63,668176.42,941110.13,863558.12,33162.83],"CONSUMO OTROS ENVASES":[0,0,0,0,0,0,521621.45,0],"CONTROL DE CALIDAD Y CALIBRACION":[970001.11,356400.17,792212.06,1282744.13,0,484431,308115.03,0],"ENERGÍA ELECTRICA":[5393641.39,5319046.03,4558317.79,3808822.07,4499089.1,3528996.69,3440716.69,3579828.55],"FLETES Y ACARREOS":[648182.36,595531.69,299078.69,712328.17,537108.68,543618.39,979093.08,511900],"FRANQUEOS Y ENCOMIENDAS":[0,0,0,0,0,11071.3,0,0],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,304014.45],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[73302.72,28396.8,529772.96,296872.64,296872.64,58872.64,707372.8,61352.32],"GASTOS DE LIBRERÍA":[82665.2,0,71576.31,8500,97062.24,73032.24,0,68535.11],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,0,0,0,0,0,211664.73,0],"GASTOS EVENTOS FIN DE AÑO":[3056000,1015389.16,166024,0,0,0,0,0],"GASTOS SELLADO Y OTROS":[0,2886875,0,0,0,0,0,0],"HONORARIOS PROFESIONALES":[108576,108576,217152,0,168576,108576,108576,0],"IMPUESTOS Y TASAS":[0,0,0,0,0,0,0,0],"INDEMNIZACIONES":[0,0,0,0,0,0,12807518.5,0],"OTROS INGRESOS/EGRESOS":[0,0,0,0,0,0,1719609.44,0],"PATENTE Y SEGUROS":[161804.39,161804.39,435731.96,198059.31,198059.31,198059.31,198059.31,0],"PROVEEDURIA":[168800,198000,161700,121150,225250,140100,159700,48800],"REPARACION Y REPUESTOS BS USO":[7270941.83,6487511.72,7145953.8,8509185.41,4092959.44,7250876.31,9183874.06,3530440.34],"ROPA DE TRABAJO COSTO":[125399.23,0,34965,694170.16,1291975.53,1450688,689516.94,0],"SEGURIDAD E HIGIENE PERSONAL":[20035.38,730181.27,346956.77,12112.78,0,147018.28,13056.11,0],"SERVICIO DE FUMIGACION":[133168.51,143171.51,286457.34,7745.18,143986.04,151974.01,150359.24,163246.67],"SERVICIOS TERCERIZADOS":[0,0,0,0,0,0,0,0],"SOFTWARE":[0,0,0,0,0,0,0,87861.31],"SUELDOS":[43524796,48048955.35,79807948.68,60147123.41,52318561.47,61499330.38,64970655.85,574577.09],"VIÁTICOS":[0,0,15810,0,19691.33,0,0,0]},"PLANTA PARBOIL":{"AMORTIZACIONES":[0,0,900559.48,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[103400,102125,369345,106700,104275,0,219363.43,448290.3],"CARGAS SOCIALES":[4078994.14,3218696.89,5182024.89,3671562.17,3550811.21,3378973.7,3535294.31,0],"CONSUMO DE ARTICULOS DE LIMPIEZA":[249119.52,113972.29,258054.21,182518.36,121497.9,10331.1,0,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[0,0,22867.28,0,0,46673.96,35998.02,33588.88],"CONTROL DE CALIDAD Y CALIBRACION":[0,356400.17,775153.46,1282744.13,0,173848,0,0],"ENERGÍA ELECTRICA":[12369045.22,12233805.85,10439186.7,8734280.93,10336539.13,10037038.24,9830619.09,10146037.77],"FLETES Y ACARREOS":[310161.68,517193.4,243003.68,826776.63,554669.42,553352.37,885668.88,760114.78],"GAS Y LEÑA":[28827013.89,27959936.92,19595288.62,24680683.75,24605309.18,25457266.09,26969495.53,7273058.3],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,133006.32],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[10005.4,3876,7339.7,16329.28,16329.28,16329.28,300048.1,17414.14],"GASTOS DE LIBRERÍA":[0,0,19964.07,0,0,7920,0,0],"GASTOS EVENTOS FIN DE AÑO":[1337000,444232.75,72635.5,0,0,0,0,0],"HONORARIOS PROFESIONALES":[14820,14820,29640,0,14820,14820,14820,0],"INDEMNIZACIONES":[0,0,0,0,0,0,23186787.8,0],"PATENTE Y SEGUROS":[161804.39,161804.39,435731.96,198059.31,198059.31,198059.31,198059.31,0],"PROVEEDURIA":[148900,90000,111100,88450,175900,70500,319400,74400],"REPARACION Y REPUESTOS BS USO":[11943886.87,12935933.88,16034387.4,10350430.86,6032843.23,10218007.17,9331244.23,6963347.75],"ROPA DE TRABAJO COSTO":[0,0,0,83295,355452.88,305408,59659.52,0],"SEGURIDAD E HIGIENE PERSONAL":[20642.52,689671.57,346956.77,12479.85,0,87391.54,13451.72,0],"SERVICIO DE FUMIGACION":[133168.51,143171.51,286457.34,7745.18,143986.04,151974.01,150359.24,163246.67],"SERVICIOS TERCERIZADOS":[998347.04,0,864284.7,1734845.97,1714620.34,1757690.8,1817803.82,1221564.15],"SOFTWARE":[0,0,0,0,0,0,0,38439.32],"SUELDOS":[13218514.76,13189010.52,20322507.31,15004225.85,14790127.04,13982487,20276136.77,0],"VIÁTICOS":[0,0,15345,0,20288.05,0,0,0]},"MOLINO HARINA":{"AMORTIZACIONES":[0,0,57774.62,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[0,0,37335,0,0,0,1198.35,0],"CARGAS SOCIALES":[982338.04,1029555.78,1711863,1671380.98,1337119.43,1852312.67,1795133.11,0],"CONTROL DE CALIDAD Y CALIBRACION":[148230,356400.17,166153.46,1282744.13,19700,0,105400,0],"ENERGÍA ELECTRICA":[2710793.76,2659523,2296445.14,1914414.82,2253915.99,1025903.8,983061.91,1054363.48],"FLETES Y ACARREOS":[0,0,12639.61,50966.17,0,0,5119.54,0],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,19000.9],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[6687.82,2590.8,242906.01,4579.54,4579.54,112342.54,45110.8,4734.52],"GASTOS DE LIBRERÍA":[0,0,19964.07,0,0,0,0,0],"GASTOS EVENTOS FIN DE AÑO":[191000,63461.83,10376.5,0,0,0,0,0],"HONORARIOS PROFESIONALES":[9906,9906,19812,0,9906,9906,9906,0],"PATENTE Y SEGUROS":[0,0,237672.65,0,0,0,0,0],"REPARACION Y REPUESTOS BS USO":[2227899.82,1641473.55,1414438.62,865422.89,15371.9,256509.35,839250.99,0],"ROPA DE TRABAJO COSTO":[0,0,336936.08,27765,0,76352,59659.52,0],"SEGURIDAD E HIGIENE PERSONAL":[0,39000,35242.45,0,0,39900,0,0],"SERVICIO DE FUMIGACION":[133168.51,143171.51,286457.34,7745.18,143986.04,151974.01,150359.24,163246.67],"SERVICIOS TERCERIZADOS":[0,0,121336.58,593518.46,571540.11,585896.93,605934.6,0],"SOFTWARE":[0,0,0,0,0,0,0,5491.33],"SUELDOS":[3516765.65,3928002.06,6633080.37,6388826.91,5126944.97,7358049.48,6963346.56,0]},"DEPOSITOS DE ARROZ":{"ALQUILERES PAGADOS":[1680000,1680000,1680000,1680000,1680000,1680000,1680000,0],"AMORTIZACIONES":[0,0,783919.95,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[0,0,112005,0,0,0,3595.04,0],"CARGAS SOCIALES":[1950365,1805705.97,2959454.77,1537419.34,1576938.51,2811551.97,2328668.63,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[184048.38,184048.38,380716.38,0,966132.17,15407.36,1004386.5,10651.59],"CONSUMO DE MATERIAL DE EMPAQUE":[0,0,0,0,0,2159460,7716780,0],"CONTROL DE CALIDAD Y CALIBRACION":[116860.33,0,170218.18,194200,99100.83,500749.9,0,0],"ENERGÍA ELECTRICA":[742984.11,655616.78,766654.92,689008.44,664853.86,561815.96,603287.42,590871.64],"FLETES Y ACARREOS":[0,2063737,179804,6446.4,0,7017.35,0,0],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,57002.71],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[13322.98,5161.2,9773.39,10858.62,10858.62,10858.62,132452.4,11323.56],"GASTOS DE LIBRERÍA":[0,0,0,0,104500,199500,0,0],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,0,0,0,0,0,524877.83,0],"GASTOS EVENTOS FIN DE AÑO":[573000,190385.47,31129.5,0,0,0,0,0],"HONORARIOS PROFESIONALES":[19734,19734,39468,0,19734,19734,19734,0],"MARKETING":[0,0,90000,0,0,0,0,0],"OTROS INGRESOS/EGRESOS":[267929.3,0,0,0,0,0,0,0],"PATENTE Y SEGUROS":[112289.13,112289.13,137449.35,137449.35,137449.35,137449.35,137449.35,0],"PROVEEDURIA":[0,0,0,0,0,0,0,0],"REPARACION Y REPUESTOS BS USO":[4728674.18,3740250,2396116.44,3233162.65,5141414.56,10182769.16,6096200.44,2651100.08],"ROPA DE TRABAJO COSTO":[0,0,0,25488.9,0,0,28964.76,0],"SEGURIDAD E HIGIENE PERSONAL":[0,0,35274.25,0,0,87439.26,0,0],"SERVICIO DE FUMIGACION":[5867040,0,5920080,5893560,0,117642,0,0],"SERVICIOS DE VIGILANCIA":[4344555.22,4325074.83,4493823.45,4445843.61,4667082.54,4739422.83,4304741.13,4814098.56],"SOFTWARE":[0,0,0,0,0,0,0,16474],"SUELDOS":[6542824.38,6869475.66,19445181.83,5890664.31,6085729.35,11459965.45,8891540.32,0]},"GALLETAS SLIM":{"ALQUILERES PAGADOS":[1310055,1041845,1052660,1629815,1029000,990500,990500,994350],"AMORTIZACIONES":[0,0,1080656.8,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[69071.2,68219.5,557499,71275.6,69655.7,0,156509.81,263535.21],"CAPACITACION AL PERSONAL":[0,0,0,0,0,0,0,132373.94],"CARGAS SOCIALES":[8247309.59,6730657.17,11426686.55,8056019.26,7663630.06,7346567.3,7856892.57,83083.64],"CONSUMO DE ARTICULOS DE LIMPIEZA":[0,109223.39,757801.32,178418.05,42093.31,205663.2,0,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[257667.72,257667.72,563750.86,0,0,0,0,0],"CONSUMO OTROS ENVASES":[0,0,98782.88,0,0,0,0,0],"CONTROL DE CALIDAD Y CALIBRACION":[491691,405780.34,251646.92,0,0,548848,0,0],"ENERGÍA ELECTRICA":[7584980.54,8195209.69,8203195.54,7893686.01,7763005.28,7521807.26,9250407.15,7461439.9],"FLETES Y ACARREOS":[188983.6,317137.09,572886.53,142719.01,162182,499151.68,305076.69,82862.95],"FRANQUEOS Y ENCOMIENDAS":[47250,0,65975,0,0,8567.25,14669.43,14000],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,247011.74],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[195277.74,23235.6,43999.57,48014.02,48014.02,48014.02,574920.4,50028.76],"GASTOS DE LIBRERÍA":[90288.44,26090.34,39938.86,14229.77,39938.86,39938.86,0,100247.57],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,0,3700000,0,0,0,0,0],"GASTOS EVENTOS FIN DE AÑO":[2483000,825003.69,134894.5,0,0,0,0,0],"GASTOS TELEFONÍA E INTERNET":[300586.81,0,0,0,0,0,0,0],"HONORARIOS PROFESIONALES":[88842,88842,177684,0,173842,88842,88842,0],"OTROS INGRESOS/EGRESOS":[97428.84,0,0,0,0,0,286601.57,0],"PATENTE Y SEGUROS":[54735.92,54735.92,67000.4,67000.4,67000.4,67000.4,67000.4,0],"PROVEEDURIA":[210452.55,153350.84,158681.42,189478.2,386028.75,205463.77,266521.41,86046.83],"REPARACION Y REPUESTOS BS USO":[4690951.84,12338212.79,14160100.47,7564442.21,7810793.09,4148464.74,7569677.29,4947778.08],"ROPA DE TRABAJO COSTO":[4000,0,0,355038.9,297520.64,916224,452530.62,0],"SEGURIDAD E HIGIENE PERSONAL":[547012.38,0,35242.45,0,0,0,74526.88,21983.47],"SERVICIO DE FUMIGACION":[133075.32,143071.32,286256.88,7739.76,143885.28,151867.66,150254.02,163132.44],"SERVICIOS DE VIGILANCIA":[1919687.17,1911079.59,1985642.93,1964442.53,2062199.26,2094163.59,1902094.93,2127159.84],"SERVICIOS TERCERIZADOS":[1586690.05,0,500274.95,0,0,0,0,1221564.17],"SOFTWARE":[0,0,0,0,0,0,0,71387.32],"SUELDOS":[27715240.53,26251963.06,44896810.53,31456033.6,30654871.86,29802718,31037348.05,317487.68],"VIÁTICOS":[21080,0,0,0,0,0,0,0]},"EXTRUSADO 2 (Snacks)":{"ALQUILERES PAGADOS":[1845555,1482845,1495160,2049870,1449000,1413500,1422500,994350],"AMORTIZACIONES":[0,0,3772932.83,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[68864.4,68015.25,519948,71062.2,69447.15,0,154889.52,255784.2],"CAPACITACION AL PERSONAL":[0,0,0,0,0,0,0,128480.58],"CARGAS SOCIALES":[7257541.14,5833513.87,9751619.91,6750268,7208777.48,7408728.39,7390607.91,118100.28],"CONSUMO DE ARTICULOS DE LIMPIEZA":[0,174757.38,725137.86,285468.84,67349.29,274217.6,0,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[257667.74,257667.74,563750.87,0,0,0,0,0],"CONSUMO DE INSUMOS VARIOS":[0,480000,0,0,0,0,0,0],"CONSUMO OTROS ENVASES":[0,0,131710.51,0,0,0,0,0],"CONTROL DE CALIDAD Y CALIBRACION":[493918,405780.32,251646.92,14800,0,257448,616230.06,0],"ENERGÍA ELECTRICA":[3217911.53,3441988.08,3467018.91,3325163.76,3267412.28,2955497.21,3619724.53,2940186.93],"FLETES Y ACARREOS":[311289.38,470178.63,564214.07,319603.06,187676,327194.34,281304.8,82101.19],"FRANQUEOS Y ENCOMIENDAS":[47250,0,65975,0,0,8574.68,0,0],"GAS Y LEÑA":[2575901.86,2847624.29,2126081.79,3717352.6,3110244.51,4027453.63,3087160.22,1847641.01],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,228010.84],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[66667.56,25826.4,48905.58,49149.48,49149.48,49149.48,535524.6,51009.24],"GASTOS DE LIBRERÍA":[90343.92,26090.35,39973.5,22729.77,39973.5,39973.5,0,95748.11],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,0,0,0,0,0,0,0],"GASTOS EVENTOS FIN DE AÑO":[2292000,761541.88,124518,0,0,0,0,0],"GASTOS TELEFONÍA E INTERNET":[300586.8,0,0,0,0,0,0,0],"HONORARIOS PROFESIONALES":[98748,98748,197496,0,98748,98748,98748,0],"OTROS INGRESOS/EGRESOS":[89309.77,0,0,0,0,0,2006211.03,0],"PATENTE Y SEGUROS":[180709.03,180709.03,221199.85,221199.85,221199.85,221199.85,221199.85,0],"PROVEEDURIA":[219536.55,152750.83,158181.48,189478.2,327678.76,226763.81,266521.43,86046.89],"REPARACION Y REPUESTOS BS USO":[4867373.94,6218119.42,2773105.68,13773917.66,8914095.43,8856203.03,11523022.94,5120777.2],"ROPA DE TRABAJO COSTO":[6400,0,27765,471428.9,0,1068928,518608.4,0],"SEGURIDAD E HIGIENE PERSONAL":[547012.41,0,35242.45,0,0,0,74526.85,21983.47],"SERVICIO DE FUMIGACION":[133075.32,143071.32,286256.88,7739.76,143885.28,151867.66,150254.02,163132.44],"SERVICIOS DE VIGILANCIA":[1919687.17,1911079.59,1985642.93,1964442.53,2062199.26,2094163.59,1902094.93,2127159.84],"SERVICIOS TERCERIZADOS":[1586690.05,0,621611.53,570663.76,571540.11,585896.93,605934.6,1221564.17],"SOFTWARE":[0,0,0,0,0,0,0,65895.98],"SUELDOS":[24132290.4,22816835.46,38368465.2,26458016.84,28309952.54,30031737.85,28978939.44,929343.3],"VIÁTICOS":[20460,0,0,0,0,0,0,0]},"EXTRUSADO (Tostaditas)":{"ALQUILERES PAGADOS":[1608690,1334010,1344780,1896915,1302000,1272000,1281000,852300],"AMORTIZACIONES":[0,0,363273.66,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[68864.4,68015.25,407943,71062.2,69447.15,0,151294.47,255784.2],"CAPACITACION AL PERSONAL":[0,0,0,0,0,0,0,128480.58],"CARGAS SOCIALES":[5907931.64,5074070.73,8393041.79,5157254.05,6241716.29,7261578.5,7471292.81,54378.39],"CONSUMO DE ARTICULOS DE LIMPIEZA":[0,152912.73,628589.43,249785.26,58930.63,205663.2,0,0],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[220858.06,220858.06,483215.03,0,0,0,0,0],"CONSUMO OTROS ENVASES":[0,0,98782.88,0,0,0,0,0],"CONTROL DE CALIDAD Y CALIBRACION":[505847.92,405780.34,251646.92,0,0,128724,0,0],"DESCUENTOS OBTENIDOS":[1228.46,0,0,0,0,0,0,0],"ENERGÍA ELECTRICA":[3821484.41,4097604.84,4120124.93,3955817.59,3887857.2,3607738.87,4424107.76,3586132.91],"FLETES Y ACARREOS":[161531.1,245799.56,441330.77,94928.04,197102,391114.43,301948,47100],"FRANQUEOS Y ENCOMIENDAS":[40500,0,56550,0,0,8567.25,0,0],"GAS Y LEÑA":[687208.61,2321236.97,2126081.79,1160621.4,777561.13,3444593.61,3087160.2,1847641.01],"GASTOS DE COMPUTACION":[0,0,0,0,0,0,0,171008.13],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[49974.34,19359.6,36659.87,36850.86,36850.86,36850.86,401632.2,38245.68],"GASTOS DE LIBRERÍA":[86528.44,22363.15,39938.86,12196.95,39938.86,39938.86,0,95714.95],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,0,0,0,0,0,0,0],"GASTOS EVENTOS FIN DE AÑO":[1719000,571156.41,93388.5,0,0,0,0,0],"GASTOS TELEFONÍA E INTERNET":[205360.11,0,0,0,0,0,0,0],"HONORARIOS PROFESIONALES":[74022,74022,148044,0,74022,74022,74022,0],"OTROS INGRESOS/EGRESOS":[89309.77,0,0,0,0,0,286601.57,0],"PATENTE Y SEGUROS":[54735.92,54735.92,67000.4,67000.4,67000.4,67000.4,67000.4,0],"PROVEEDURIA":[189706.77,133757.86,137941.28,139052.75,289231.8,166083.27,415954.19,116268.77],"REPARACION Y REPUESTOS BS USO":[3284591.45,3985359.65,1481623.67,6297154.75,4870286.45,2945450.89,5793929.58,1925835.82],"ROPA DE TRABAJO COSTO":[5600,0,0,166590,0,610816,178113.56,0],"SEGURIDAD E HIGIENE PERSONAL":[468867.77,0,35242.45,0,0,0,63880.16,18842.98],"SERVICIO DE FUMIGACION":[133075.32,143071.32,286256.88,7739.76,143885.28,151867.66,150254.02,163132.44],"SERVICIOS DE VIGILANCIA":[1919687.17,1911079.59,1985642.93,1964442.53,2062199.26,2094163.59,1902094.93,2127159.84],"SERVICIOS TERCERIZADOS":[1586690.05,0,621611.53,570663.76,571540.11,585896.93,605934.6,1221564.17],"SOFTWARE":[0,0,0,0,0,0,0,49421.99],"SUELDOS":[19901315.88,19905467.37,33563649.41,20351073.62,24959865.42,29482766.12,29287195.76,194946.32],"VENTA DE INFLADOS":[0,0,0,0,0,0,0,0],"VIÁTICOS":[20460,0,0,0,0,0,0,0]},"TOSTADAS RECTANGULARES":{"FLETES Y ACARREOS":[0,0,0,647520,450000,450000,484373,900000],"SERVICIOS DE ELABORACION TOSTADAS RECTANGULARES":[0,0,26107200,104428800,37762200,11188800,26107200,39160800]},"ADMINISTRACION":{"AJUSTE DE CENTAVOS":[4925.47,1970.84,3547.41,5707.27,5721.1,6991.44,14601.9,4794.87],"AJUSTE DE CENTAVOS USD":[116.4,0,0,17580,0,28400,0,0],"AMORTIZACIONES":[0,0,351272.25,0,0,0,0,0],"BENEFICIOS Y ATENCIONES AL PERSONAL":[1796554.32,1531875,2142690,2308980,1623625,74600,3235931.86,429890],"CAPACITACION AL PERSONAL":[0,0,0,0,0,0,0,268850],"CARGAS SOCIALES":[12931547.31,11091434.87,17196860.29,11021218.4,11399968.96,11186710.41,11552343.55,293993.11],"COMISIONES PAGADAS":[609160.92,0,0,0,0,0,0,0],"CONSUMO DE ARTICULOS DE LIMPIEZA":[0,0,0,0,0,0,0,63695.02],"CONSUMO DE COMBUSTIBLES Y LUBRICANTES":[467962.61,562572.76,365661.18,1067958.54,56175.92,234095.38,388341.01,75773.5],"CONSUMO DE INSUMOS VARIOS":[8216,0,0,0,0,0,0,0],"DERECHOS Y GASTOS DE EXPORTACION":[0,0,0,0,240681.56,0,0,0],"DESCUENTOS OBTENIDOS":[54801,0,0,0,0,0,0,0],"DIFERENCIA DE CAJA":[810101.65,896875.19,140.31,139.1,599.27,792.36,858.18,2638.2],"DIFERENCIA DE CAMBIO":[0,0,0,0,0,0,0,596.37],"ENERGÍA ELECTRICA":[303370.38,217884.84,340115.81,307209.34,343186.24,326592.44,287479.17,336381.95],"FLETES Y ACARREOS":[310620.83,0,47686.95,32000,22863.3,46729.4,5000,0],"FRANQUEOS Y ENCOMIENDAS":[1073112.59,660544.86,1001207.67,741783.34,3388854.05,88021.1,5651269.49,191000],"GAS Y LEÑA":[67135.44,43998.61,39540.3,58236.92,0,27894.44,24463.59,74767.73],"GASTOS DE CARGA Y DESCARGA":[0,0,0,0,0,0,21600,0],"GASTOS DE COMPUTACION":[2459225.23,1020410.91,218111.97,138396.45,427002.48,297785.84,792523.38,387855.68],"GASTOS DE FARMACIA Y HONORARIOS MEDICOS":[314140.5,51090,301256.75,69671.06,69671.06,69671.06,823592.9,71840.78],"GASTOS DE LIBRERÍA":[821121.96,518348.33,662874.65,675671.08,643385.4,309682.94,280115.74,363700.43],"GASTOS DE REPRESENTACION":[21000,229000,24300,24300,24300,24300,24300,27000],"GASTOS EN MAQUINARIAS Y HERRAMIENTAS MENORES":[0,5631826.65,0,0,148472.5,148472.5,0,459086.26],"GASTOS EVENTOS FIN DE AÑO":[2674000,888465.52,145271,0,0,0,0,0],"GASTOS SELLADO Y OTROS":[0,25697.74,0,34149.54,63670.05,0,0,31096.25],"GASTOS TELEFONÍA E INTERNET":[1924621.73,1869553.77,2038549.25,1780417.84,1828468.01,1897431.31,2017485.99,2173112.41],"HONORARIOS PROFESIONALES":[9893419.13,12183714.82,8577877.77,8265565.39,8546767.51,8533717.51,8577572.34,3626381.89],"INDEMNIZACIONES":[5216118.2,0,0,0,0,4503486.95,0,0],"ING/EGRESOS MERCADO PAGO PENDIENTES DE IDENTIFICAR":[4484737.51,947588.47,478.09,0,9190.79,381480.48,10966.15,554475.93],"OBSEQUIOS Y ATENCIONES (PUBLICIDAD Y DESCUENTOS)":[0,600000,0,600000,0,0,0,0],"OTROS INGRESOS/EGRESOS":[776835.83,6490.18,354724.44,0,0,0,10000,0],"PATENTE Y SEGUROS":[161804.39,405261.12,990303.94,198059.31,465866.6,198059.31,198059.31,294629.44],"PROVEEDURIA":[155537.51,85198.22,243811.26,273813.65,74242.15,151340.49,393933.79,94500.84],"REPARACION Y REPUESTOS BS USO":[2355399.5,1703585.36,337295.2,0,166418.39,1019828.78,48500,193909.05],"ROPA DE TRABAJO COSTO":[0,0,27765,27765,0,14400,37894.76,0],"SEGURIDAD E HIGIENE PERSONAL":[0,0,35242.45,0,0,0,0,0],"SEGURO DE VIDA":[29663.18,0,24706.59,0,57515.42,0,24025.78,77824.78],"SERVICIOS DE INFORMACION COMERCIALES":[770063,770063,804331,804331,847524,847524,897528,897528],"SERVICIOS DE VIGILANCIA":[2335782.36,2710156.73,2528407.8,3322894.75,3070832.94,2548076.8,2383577.6,2648416.32],"SOFTWARE":[12507825.27,14874775.45,13396575.44,12529758.15,13557634.28,10328742.08,15425805.68,9961606.98],"SUELDOS":[53393650.66,50651545.63,82241257.52,51185461.27,53216009.39,57747927.76,55837065.44,1132744.43],"VIÁTICOS":[334274.85,3979927.32,259726.11,165708.01,163174.23,275728.18,1544339.44,194094.41]}},"lastClosedMonth":"2026-04","actualizadoA":"27/05/2026"}
+;
+  M = data.meses;
+  document.getElementById('chip-updated').textContent = 'Actualizado a ' + (data.actualizadoA || '');
+  buildTable('tva',  data.VA);
+  buildTable('tinf', data.INF);
+  buildTable('tadm', data.ADM);
+  buildCos(data.COS, data.cosUltLabel, data.cosTrimLabel, data.cosAnualLabel);
+  updateKPIs(data);
+}
+loadData();
+</script>
+</body>
+</html>

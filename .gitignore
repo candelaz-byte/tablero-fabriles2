@@ -1,4 +1,7 @@
 node_modules/
 SQL_PASS.txt
+DASHBOARD_PASS.txt
 .env
 functions/node_modules/
+*.log
+_snapshot.json
